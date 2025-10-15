@@ -87,12 +87,14 @@ def main
   else
     message = "おはようございます！\n今日の予定をお知らせします。\n\n"
     events.each do |event|
-      start_time = event.start.date || event.start.date_time
-
-      if start_time.is_a?(Google::Apis::CalendarV3::EventDateTime)
-        formatted_time = start_time.strftime("%H:%M")
-        message += "【#{formatted_time}】 #{event.summary}\n"
-      else
+      # date_timeがあれば時刻付き、dateのみなら終日イベント
+      if event.start.date_time
+        start_time = event.start.date_time
+        end_time = event.end.date_time
+        formatted_start = start_time.strftime("%H:%M")
+        formatted_end = end_time.strftime("%H:%M")
+        message += "【#{formatted_start}〜#{formatted_end}】 #{event.summary}\n"
+      elsif event.start.date
         message += "【終日】 #{event.summary}\n"
       end
     end

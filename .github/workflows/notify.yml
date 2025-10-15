@@ -1,0 +1,36 @@
+name: Send Daily Calendar Events
+
+on:
+  # 毎朝6時 (JST) に実行するためのスケジュール
+  # UTCでは前日の21時になるため、'0 21 * * *' と指定
+  schedule:
+    - cron: "0 21 * * *"
+
+  # 手動で実行できるようにするための設定
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. リポジトリのコードをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Rubyの環境をセットアップ
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4" # Gemfile.lockに合わせたバージョンを指定
+          bundler-cache: true # bundle installを自動で実行
+
+      # 3. Rubyスクリプトを実行
+      - name: Run notifier script
+        env:
+          # GitHub Secretsの値を環境変数としてスクリプトに渡す
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_TOKEN_YAML: ${{ secrets.GOOGLE_TOKEN_YAML }}
+        run: bundle exec ruby main.rb

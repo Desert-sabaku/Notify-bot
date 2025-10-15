@@ -6,11 +6,8 @@ require "fileutils"
 require "discordrb"
 require "date"
 
-# --- GitHub Actions用の変更点 ---
-# 実行時に環境変数からファイルを作成する
-# credentials.json
+# --- GitHub Actions用の設定 ---
 File.write("credentials.json", ENV["GOOGLE_CREDENTIALS_JSON"]) if ENV["GOOGLE_CREDENTIALS_JSON"]
-# token.yaml
 File.write("token.yaml", ENV["GOOGLE_TOKEN_YAML"]) if ENV["GOOGLE_TOKEN_YAML"]
 
 # --- 定数設定 ---
@@ -20,12 +17,10 @@ CREDENTIALS_PATH = "credentials.json".freeze
 TOKEN_PATH = "token.yaml".freeze
 SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
 
-# Discord BotのトークンとチャンネルIDを環境変数から取得
 DISCORD_BOT_TOKEN = ENV["DISCORD_BOT_TOKEN"]
-DISCORD_CHANNEL_ID = ENV["DISCORD_CHANNEL_ID"]
+DISCORD_CHANNEL_IDS_STRING = ENV["DISCORD_CHANNEL_ID"]
 
 # --- Google Calendar API認証 ---
-# (authorizeメソッドは変更なし)
 def authorize
   client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
   token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
@@ -33,14 +28,12 @@ def authorize
   user_id = "default"
   credentials = authorizer.get_credentials(user_id)
 
-  # GitHub Actionsでは認証済みのtoken.yamlを直接使うので、nilになることはない
   raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。" if credentials.nil?
 
   credentials
 end
 
 # --- Google Calendarから予定を取得 ---
-# (fetch_today_eventsメソッドは変更なし)
 def fetch_today_events
   service = Google::Apis::CalendarV3::CalendarService.new
   service.client_options.application_name = APPLICATION_NAME
@@ -61,23 +54,36 @@ def fetch_today_events
 end
 
 # --- Discordにメッセージを送信 ---
-# (send_discord_messageメソッドは変更なし)
 def send_discord_message(message)
+  # カンマ区切りの文字列を、IDの配列に変換する
+  channel_ids = DISCORD_CHANNEL_IDS_STRING.split(",")
+
+  if channel_ids.empty?
+    puts "通知先のチャンネルIDが設定されていません。"
+    return
+  end
+
   bot = Discordrb::Bot.new(token: DISCORD_BOT_TOKEN)
 
   bot.ready do |event|
     puts "Bot is ready!"
-    bot.send_message(DISCORD_CHANNEL_ID, message)
+
+    # 各チャンネルIDに対して順番にメッセージを送信
+    channel_ids.each do |id|
+      puts "Sending to channel: #{id}"
+      bot.send_message(id.strip, message) # .stripで万が一の空白を除去
+    end
+
     bot.stop
   end
 
   bot.run(true)
   bot.join
-  puts "Message sent and bot stopped."
+  puts "All messages sent and bot stopped."
 end
+# --- ★★★ここまで修正★★★ ---
 
 # --- メイン処理 ---
-# (mainメソッドは変更なし)
 def main
   puts "今日の予定を取得しています..."
   events = fetch_today_events
@@ -87,14 +93,12 @@ def main
   else
     message = "おはようございます！\n今日の予定をお知らせします。\n\n"
     events.each do |event|
-      # date_timeがあれば時刻付き、dateのみなら終日イベント
-      if event.start.date_time
-        start_time = event.start.date_time
-        end_time = event.end.date_time
-        formatted_start = start_time.strftime("%H:%M")
-        formatted_end = end_time.strftime("%H:%M")
-        message += "【#{formatted_start}〜#{formatted_end}】 #{event.summary}\n"
-      elsif event.start.date
+      start_time = event.start.date || event.start.date_time
+
+      if start_time.is_a?(Google::Apis::CalendarV3::EventDateTime)
+        formatted_time = start_time.strftime("%H:%M")
+        message += "【#{formatted_time}】 #{event.summary}\n"
+      else
         message += "【終日】 #{event.summary}\n"
       end
     end

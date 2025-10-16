@@ -6,9 +6,7 @@ require "fileutils"
 require "discordrb"
 require "date"
 
-# --- GitHub Actions用の変更点 ---
-# 実行時に環境変数からファイルを作成する
-# credentials.json
+# --- from GitHub Actions ---
 File.write("credentials.json", ENV["GOOGLE_CREDENTIALS_JSON"]) if ENV["GOOGLE_CREDENTIALS_JSON"]
 # token.yaml
 File.write("token.yaml", ENV["GOOGLE_TOKEN_YAML"]) if ENV["GOOGLE_TOKEN_YAML"]
@@ -25,7 +23,6 @@ DISCORD_BOT_TOKEN = ENV["DISCORD_BOT_TOKEN"]
 DISCORD_CHANNEL_ID = ENV["DISCORD_CHANNEL_ID"]
 
 # --- Google Calendar API認証 ---
-# (authorizeメソッドは変更なし)
 def authorize
   client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
   token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
@@ -40,8 +37,7 @@ def authorize
 end
 
 # --- Google Calendarから予定を取得 ---
-# (fetch_today_eventsメソッドは変更なし)
-def fetch_today_events
+def fetch_today_events # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   service = Google::Apis::CalendarV3::CalendarService.new
   service.client_options.application_name = APPLICATION_NAME
   service.authorization = authorize
@@ -61,11 +57,10 @@ def fetch_today_events
 end
 
 # --- Discordにメッセージを送信 ---
-# (send_discord_messageメソッドは変更なし)
 def send_discord_message(message)
   bot = Discordrb::Bot.new(token: DISCORD_BOT_TOKEN)
 
-  bot.ready do |event|
+  bot.ready do |_event|
     puts "Bot is ready!"
     bot.send_message(DISCORD_CHANNEL_ID, message)
     bot.stop
@@ -77,8 +72,7 @@ def send_discord_message(message)
 end
 
 # --- メイン処理 ---
-# (mainメソッドは変更なし)
-def main
+def main # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   puts "今日の予定を取得しています..."
   events = fetch_today_events
 

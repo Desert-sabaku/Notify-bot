@@ -6,23 +6,22 @@ require "fileutils"
 require "discordrb"
 require "date"
 
-# --- from GitHub Actions ---
 File.write("credentials.json", ENV["GOOGLE_CREDENTIALS_JSON"]) if ENV["GOOGLE_CREDENTIALS_JSON"]
-# token.yaml
 File.write("token.yaml", ENV["GOOGLE_TOKEN_YAML"]) if ENV["GOOGLE_TOKEN_YAML"]
 
-# --- 定数設定 ---
 OOB_URI = "urn:ietf:wg:oauth:2.0:oob".freeze
 APPLICATION_NAME = "Discord Calendar Notifier".freeze
 CREDENTIALS_PATH = "credentials.json".freeze
 TOKEN_PATH = "token.yaml".freeze
 SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
 
-# Discord BotのトークンとチャンネルIDを環境変数から取得
 DISCORD_BOT_TOKEN = ENV["DISCORD_BOT_TOKEN"]
 DISCORD_CHANNEL_ID = ENV["DISCORD_CHANNEL_ID"]
 
-# --- Google Calendar API認証 ---
+# Authorize Google Calendar API
+#
+# @return [Google::Auth::UserRefreshCredentials] OAuth2 credentials
+# @raise [RuntimeError] if authorization fails
 def authorize
   client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
   token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
@@ -30,21 +29,24 @@ def authorize
   user_id = "default"
   credentials = authorizer.get_credentials(user_id)
 
-  # GitHub Actionsでは認証済みのtoken.yamlを直接使うので、nilになることはない
   raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。" if credentials.nil?
 
   credentials
 end
 
-# --- Google Calendarから予定を取得 ---
+# Fetch today's events from Google Calendar
+#
+# @return [Array<Google::Apis::CalendarV3::Event>] List of today's events
+# @raise [Google::Apis::Error] if API request fails
 def fetch_today_events # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   service = Google::Apis::CalendarV3::CalendarService.new
   service.client_options.application_name = APPLICATION_NAME
   service.authorization = authorize
 
+  jst_offset = "+09:00"
   today = Date.today
-  time_min = DateTime.new(today.year, today.month, today.day, 0, 0, 0).rfc3339
-  time_max = DateTime.new(today.year, today.month, today.day, 23, 59, 59).rfc3339
+  time_min = DateTime.new(today.year, today.month, today.day, 0, 0, 0, jst_offset).rfc3339
+  time_max = DateTime.new(today.year, today.month, today.day, 23, 59, 59, jst_offset).rfc3339
 
   events = service.list_events(
     "primary",
@@ -56,7 +58,10 @@ def fetch_today_events # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   events.items
 end
 
-# --- Discordにメッセージを送信 ---
+# Send a message to a Discord channel
+#
+# @param [String] message The message to send
+# @return [void]
 def send_discord_message(message)
   bot = Discordrb::Bot.new(token: DISCORD_BOT_TOKEN)
 
@@ -71,7 +76,9 @@ def send_discord_message(message)
   puts "Message sent and bot stopped."
 end
 
-# --- メイン処理 ---
+# Main execution flow
+#
+# @return [void]
 def main # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   puts "今日の予定を取得しています..."
   events = fetch_today_events
@@ -98,5 +105,4 @@ def main # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   puts "完了しました！"
 end
 
-# --- スクリプト実行 ---
-main
+main if __FILE__ == $PROGRAM_NAME

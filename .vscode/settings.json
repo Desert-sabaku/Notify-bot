@@ -1,6 +1,9 @@
 {
     "cSpell.words": [
         "discordrb",
-        "dotenv"
+        "dotenv",
+        "googleauth",
+        "rubocop",
+        "solargraph"
     ]
 }

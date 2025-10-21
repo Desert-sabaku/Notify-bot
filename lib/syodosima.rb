@@ -151,8 +151,7 @@ module Syodosima
   def self.fetch_today_events
     service = Google::Apis::CalendarV3::CalendarService.new
     service.client_options.application_name = APPLICATION_NAME
-    # Use top-level `authorize` so tests can stub it via TestHelper#stub_global
-    service.authorization = Object.send(:authorize)
+    service.authorization = authorize
 
     timezone_offset = ENV.fetch("TIMEZONE_OFFSET", "+09:00")
     now_tz = DateTime.now.new_offset(timezone_offset)
@@ -171,25 +170,11 @@ module Syodosima
   end
 
   def self.send_discord_message(message)
-    # Resolve token and channel from top-level constants if present so tests
-    # that manipulate top-level constants (reset_constant) work correctly.
-    token = if Object.const_defined?(:DISCORD_BOT_TOKEN)
-              Object.const_get(:DISCORD_BOT_TOKEN)
-            else
-              DISCORD_BOT_TOKEN
-            end
-
-    channel_id = if Object.const_defined?(:DISCORD_CHANNEL_ID)
-                   Object.const_get(:DISCORD_CHANNEL_ID)
-                 else
-                   DISCORD_CHANNEL_ID
-                 end
-
-    bot = Discordrb::Bot.new(token: token)
+    bot = Discordrb::Bot.new(token: DISCORD_BOT_TOKEN)
 
     bot.ready do |_event|
       puts "Bot is ready!"
-      bot.send_message(channel_id, message)
+      bot.send_message(DISCORD_CHANNEL_ID, message)
       bot.stop
     end
 
@@ -199,12 +184,11 @@ module Syodosima
   end
 
   def self.run
-    # Delegate to top-level helpers so tests can stub/override them
-    Object.send(:validate_env!)
-    Object.send(:write_credential_files!)
+    validate_env!
+    write_credential_files!
 
     puts "今日の予定を取得しています..."
-    events = Object.send(:fetch_today_events)
+    events = fetch_today_events
 
     if events.empty?
       message = "おはようございます！\n今日の予定はありません。"
@@ -223,53 +207,7 @@ module Syodosima
     end
 
     puts "Discordに通知を送信します..."
-    Object.send(:send_discord_message, message)
+    send_discord_message(message)
     puts "完了しました！"
   end
 end
-
-# Backwards compatibility: expose the previous top-level constants and methods
-# that used to be defined in `lib/main.rb`. Tests and external callers may rely
-# on these top-level symbols, so define delegators to the `Syodosima` module.
-
-# Constants
-APPLICATION_NAME = Syodosima::APPLICATION_NAME unless defined?(APPLICATION_NAME)
-CREDENTIALS_PATH = Syodosima::CREDENTIALS_PATH unless defined?(CREDENTIALS_PATH)
-TOKEN_PATH = Syodosima::TOKEN_PATH unless defined?(TOKEN_PATH)
-SCOPE = Syodosima::SCOPE unless defined?(SCOPE)
-DISCORD_BOT_TOKEN = Syodosima::DISCORD_BOT_TOKEN unless defined?(DISCORD_BOT_TOKEN)
-DISCORD_CHANNEL_ID = Syodosima::DISCORD_CHANNEL_ID unless defined?(DISCORD_CHANNEL_ID)
-CREATED_FILES = Syodosima::CREATED_FILES unless defined?(CREATED_FILES)
-REQUIRED_ENV_VARS = Syodosima::REQUIRED_ENV_VARS unless defined?(REQUIRED_ENV_VARS)
-
-# Top-level method delegators. These will be private methods on Object/Kernal
-# like the original top-level definitions.
-Object.define_method(:validate_env!) { Syodosima.validate_env! }
-Object.send(:private, :validate_env!)
-Kernel.define_method(:validate_env!) { Syodosima.validate_env! }
-Kernel.send(:private, :validate_env!)
-
-Object.define_method(:write_credential_files!) { Syodosima.write_credential_files! }
-Object.send(:private, :write_credential_files!)
-Kernel.define_method(:write_credential_files!) { Syodosima.write_credential_files! }
-Kernel.send(:private, :write_credential_files!)
-
-Object.define_method(:authorize) { Syodosima.authorize }
-Object.send(:private, :authorize)
-Kernel.define_method(:authorize) { Syodosima.authorize }
-Kernel.send(:private, :authorize)
-
-Object.define_method(:fetch_today_events) { Syodosima.fetch_today_events }
-Object.send(:private, :fetch_today_events)
-Kernel.define_method(:fetch_today_events) { Syodosima.fetch_today_events }
-Kernel.send(:private, :fetch_today_events)
-
-Object.define_method(:send_discord_message) { |message| Syodosima.send_discord_message(message) }
-Object.send(:private, :send_discord_message)
-Kernel.define_method(:send_discord_message) { |message| Syodosima.send_discord_message(message) }
-Kernel.send(:private, :send_discord_message)
-
-Object.define_method(:main) { Syodosima.run }
-Object.send(:private, :main)
-Kernel.define_method(:main) { Syodosima.run }
-Kernel.send(:private, :main)

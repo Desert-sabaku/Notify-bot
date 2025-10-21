@@ -105,14 +105,14 @@ class TestSyodosima < Minitest::Test
           captured_authorizer_args = [client, scope, store]
           mock_authorizer
         } do
-          assert_equal mock_credentials, authorize
+          assert_equal mock_credentials, Syodosima.authorize
         end
       end
     end
 
-    assert_equal CREDENTIALS_PATH, captured_path
-    assert_equal TOKEN_PATH, captured_token_path
-    assert_equal [mock_client_id, SCOPE, mock_token_store], captured_authorizer_args
+  assert_equal Syodosima::CREDENTIALS_PATH, captured_path
+  assert_equal Syodosima::TOKEN_PATH, captured_token_path
+  assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   end
 
@@ -139,16 +139,16 @@ class TestSyodosima < Minitest::Test
           captured_authorizer_args = [client, scope, store]
           mock_authorizer
         } do
-          error = assert_raises(RuntimeError) { authorize }
+          error = assert_raises(RuntimeError) { Syodosima.authorize }
           expected_message = "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
           assert_equal expected_message, error.message
         end
       end
     end
 
-    assert_equal CREDENTIALS_PATH, captured_path
-    assert_equal TOKEN_PATH, captured_token_path
-    assert_equal [mock_client_id, SCOPE, mock_token_store], captured_authorizer_args
+  assert_equal Syodosima::CREDENTIALS_PATH, captured_path
+  assert_equal Syodosima::TOKEN_PATH, captured_token_path
+  assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   end
 
@@ -158,12 +158,12 @@ class TestSyodosima < Minitest::Test
     credentials = Object.new
 
     Google::Apis::CalendarV3::CalendarService.stub :new, service do
-      stub_global(:authorize, credentials) do
-        result = fetch_today_events
+      Syodosima.stub :authorize, credentials do
+        result = Syodosima.fetch_today_events
 
         assert_equal events, result
         assert_equal credentials, service.authorization
-        assert_equal APPLICATION_NAME, service.client_options.application_name
+  assert_equal Syodosima::APPLICATION_NAME, service.client_options.application_name
 
         calendar_id, params = service.list_args
         assert_equal "primary", calendar_id
@@ -180,7 +180,7 @@ class TestSyodosima < Minitest::Test
     test_message = "Test message"
 
     Discordrb::Bot.stub :new, bot_spy do
-      capture_io { send_discord_message(test_message) }
+      capture_io { Syodosima.send_discord_message(test_message) }
     end
 
     assert_equal [[@channel_id, test_message]], bot_spy.sent_messages
@@ -190,7 +190,7 @@ class TestSyodosima < Minitest::Test
   end
 
   def test_main_with_no_events
-    result = run_main_and_capture_message([])
+  result = run_main_and_capture_message([])
 
     assert_equal @channel_id, result[:channel]
     assert_equal "おはようございます！\n今日の予定はありません。", result[:message]
@@ -203,7 +203,7 @@ class TestSyodosima < Minitest::Test
     end_time = DateTime.new(2025, 10, 19, 10, 0, 0, "+09:00")
     events = [create_mock_event("会議", start_time, end_time)]
 
-    result = run_main_and_capture_message(events)
+  result = run_main_and_capture_message(events)
     message = result[:message]
     expected = "おはようございます！\n今日の予定をお知らせします。\n\n【09:00〜10:00】 会議\n"
     assert_equal expected, message
@@ -213,7 +213,7 @@ class TestSyodosima < Minitest::Test
   def test_main_with_all_day_event
     events = [create_mock_event("休日")]
 
-    result = run_main_and_capture_message(events)
+  result = run_main_and_capture_message(events)
     message = result[:message]
     expected = "おはようございます！\n今日の予定をお知らせします。\n\n【終日】 休日\n"
     assert_equal expected, message
@@ -235,9 +235,9 @@ class TestSyodosima < Minitest::Test
   def run_main_and_capture_message(events)
     bot_spy = BotSpy.new
 
-    stub_global(:fetch_today_events, events) do
+    Syodosima.stub :fetch_today_events, events do
       Discordrb::Bot.stub :new, bot_spy do
-        capture_io { main }
+        capture_io { Syodosima.run }
       end
     end
 
@@ -252,7 +252,7 @@ class TestSyodosima < Minitest::Test
   def run_module_and_capture_message(events)
     bot_spy = BotSpy.new
 
-    stub_global(:fetch_today_events, events) do
+    Syodosima.stub :fetch_today_events, events do
       Discordrb::Bot.stub :new, bot_spy do
         capture_io { Syodosima.run }
       end
@@ -267,7 +267,12 @@ class TestSyodosima < Minitest::Test
   end
 
   def reset_constant(name, value)
-    Object.send(:remove_const, name) if Object.const_defined?(name)
-    Object.const_set(name, value)
+    if Syodosima.const_defined?(name)
+      Syodosima.send(:remove_const, name) if Syodosima.const_defined?(name)
+      Syodosima.const_set(name, value)
+    else
+      Object.send(:remove_const, name) if Object.const_defined?(name)
+      Object.const_set(name, value)
+    end
   end
 end

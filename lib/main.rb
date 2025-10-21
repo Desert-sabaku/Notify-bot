@@ -7,6 +7,8 @@ require "discordrb"
 require "date"
 require "dotenv/load"
 require "rbconfig"
+require "webrick"
+require "uri"
 
 # Validate required environment variables
 required_env_vars = {
@@ -85,11 +87,40 @@ def authorize
       raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
     end
 
-    auth_url = authorizer.get_authorization_url(base_url: REDIRECT_URI)
-    puts "認証用 URL をブラウザで開き、許可後に表示されるコードを貼り付けてください:"
-    puts auth_url
+    # Start an HTTP server to receive the OAuth2 callback. Default port is 8080
+    # so it matches common redirect URIs like http://127.0.0.1:8080/oauth2callback.
+    port = (ENV["OAUTH_PORT"] || "8080").to_i
+    redirect_uri = "http://127.0.0.1:#{port}/oauth2callback"
 
-    # Try to open the browser automatically (best-effort)
+    server = WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new("/dev/null"), AccessLog: [])
+
+    code_container = { code: nil }
+
+    handler = proc do |req, res|
+      # Extract code from query parameters
+      q = URI.decode_www_form(req.query_string || "").to_h
+      code_container[:code] = q["code"] || req.query["code"]
+      res.body = "<html><body><h1>認証成功！このウィンドウを閉じてください。</h1></body></html>"
+      res.content_type = "text/html; charset=utf-8"
+      # Shutdown server after handling
+      Thread.new { server.shutdown }
+    end
+
+    server.mount_proc "/oauth2callback", &handler
+    server.mount_proc "/auth/callback", &handler
+
+    server_thread = Thread.new do
+      server.start
+    rescue StandardError => e
+      warn "WEBrick server error: #{e.message}"
+    end
+
+    auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
+    puts "ブラウザで認証してください："
+    puts auth_url
+    puts "このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）"
+
+    # Auto-open browser (best-effort)
     begin
       host_os = RbConfig::CONFIG["host_os"]
       case host_os
@@ -104,15 +135,17 @@ def authorize
       # ignore failures to auto-open
     end
 
-    print "認可コード: "
-    code = gets&.chomp
-    raise "認可コードが空です。認証を最初からやり直してください。" if code.to_s.strip.empty?
+    # Wait until server handles the callback and shuts down
+    server_thread.join
+
+    code = code_container[:code]
+    raise "認可コードが取得できませんでした。ブラウザでアクセスした際にこのプロセスが起動しているか確認してください。" if code.nil? || code.to_s.strip.empty?
 
     begin
       credentials = authorizer.get_and_store_credentials_from_code(
         user_id: user_id,
         code: code,
-        base_url: REDIRECT_URI
+        base_url: redirect_uri
       )
     rescue StandardError => e
       raise "Google認証に失敗しました（コード交換エラー）: #{e.message}"
@@ -131,11 +164,11 @@ def fetch_today_events # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   service.client_options.application_name = APPLICATION_NAME
   service.authorization = authorize
 
-  jst_offset = "+09:00"
-  now_jst = DateTime.now.new_offset(jst_offset)
-  today = now_jst.to_date
-  time_min = DateTime.new(today.year, today.month, today.day, 0, 0, 0, jst_offset).rfc3339
-  time_max = DateTime.new(today.year, today.month, today.day, 23, 59, 59, jst_offset).rfc3339
+  timezone_offset = ENV.fetch("TIMEZONE_OFFSET", "+09:00")
+  now_tz = DateTime.now.new_offset(timezone_offset)
+  today = now_tz.to_date
+  time_min = DateTime.new(today.year, today.month, today.day, 0, 0, 0, timezone_offset).rfc3339
+  time_max = DateTime.new(today.year, today.month, today.day, 23, 59, 59, timezone_offset).rfc3339
 
   events = service.list_events(
     "primary",
@@ -180,6 +213,7 @@ def main # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       # date_timeが設定されていれば時刻付き、dateが設定されていれば終日
       if event.start.date_time
         start_time = event.start.date_time
+        # Event objects use `start` and `end` fields; access end.date_time
         end_time = event.end.date_time
         formatted_time = "#{start_time.strftime('%H:%M')}〜#{end_time.strftime('%H:%M')}"
         message += "【#{formatted_time}】 #{event.summary}\n"

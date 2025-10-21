@@ -6,7 +6,7 @@ require "date"
 
 module TestHelper
   EventTime = Struct.new(:date_time, :date)
-  Event = Struct.new(:start, :end_time, :summary)
+  Event = Struct.new(:start, :end, :summary)
 
   ENV_KEYS = %w[DISCORD_BOT_TOKEN DISCORD_CHANNEL_ID GOOGLE_CREDENTIALS_JSON GOOGLE_TOKEN_YAML].freeze
 

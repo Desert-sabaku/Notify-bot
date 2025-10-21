@@ -55,7 +55,6 @@ module TestHelper
     Object.send(visibility, method_name)
     Kernel.define_method(method_name) { |*args, &block| original_method.bind(self).call(*args, &block) }
     Kernel.send(visibility, method_name)
-    Kernel.send(visibility, method_name)
   end
 
   # Create a mock authorizer that captures the user_id passed to get_credentials

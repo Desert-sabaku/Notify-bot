@@ -6,22 +6,30 @@ require "date"
 
 module TestHelper
   EventTime = Struct.new(:date_time, :date)
-  Event = Struct.new(:start, :end, :summary)
+  Event = Struct.new(:start, :end_time, :summary)
 
-  # Set up environment variables for testing
-  def setup_env_vars
-    ENV["DISCORD_BOT_TOKEN"] = "test_token"
-    ENV["DISCORD_CHANNEL_ID"] = "123456789"
-    ENV["GOOGLE_CREDENTIALS_JSON"] = '{"type":"service_account","project_id":"test"}'
-    ENV["GOOGLE_TOKEN_YAML"] = "test_token_yaml"
+  ENV_KEYS = %w[DISCORD_BOT_TOKEN DISCORD_CHANNEL_ID GOOGLE_CREDENTIALS_JSON GOOGLE_TOKEN_YAML].freeze
+
+  # Set up environment variables for testing (optionally override via hash)
+  def setup_env_vars(overrides = {})
+    @__env_backup = ENV_KEYS.to_h { |k| [k, ENV.key?(k) ? ENV[k] : :__missing__] }
+    defaults = {
+      "DISCORD_BOT_TOKEN" => "test_token",
+      "DISCORD_CHANNEL_ID" => "123456789",
+      "GOOGLE_CREDENTIALS_JSON" => '{"type":"service_account","project_id":"test"}',
+      "GOOGLE_TOKEN_YAML" => "test_token_yaml"
+    }
+    defaults.merge(overrides).each { |k, v| ENV[k] = v }
   end
 
   # Clean up environment variables after testing
   def cleanup_env_vars
-    ENV.delete("DISCORD_BOT_TOKEN")
-    ENV.delete("DISCORD_CHANNEL_ID")
-    ENV.delete("GOOGLE_CREDENTIALS_JSON")
-    ENV.delete("GOOGLE_TOKEN_YAML")
+    return unless defined?(@__env_backup) && @__env_backup
+
+    @__env_backup.each do |k, v|
+      v == :__missing__ ? ENV.delete(k) : ENV[k] = v
+    end
+    @__env_backup = nil
   end
 
   # Helper to stub top-level methods
@@ -80,6 +88,9 @@ module TestHelper
   def mock_authorizer_with_credentials( # rubocop:disable Metrics/MethodLength
     capture_hash, return_value = nil, extra_methods: {}
   )
+    capture_hash ||= {}
+    raise ArgumentError, "capture_hash must be a Hash" unless capture_hash.is_a?(Hash)
+
     mock_authorizer = Object.new
     mock_authorizer.define_singleton_method(:get_credentials) do |user_id|
       capture_hash[:user_id] = user_id

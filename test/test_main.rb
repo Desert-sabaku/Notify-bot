@@ -81,18 +81,14 @@ class TestMain < Minitest::Test # rubocop:disable Metrics/ClassLength
   def test_authorize_with_valid_credentials
     mock_client_id = Object.new
     mock_token_store = Object.new
-    mock_authorizer = Object.new
     mock_credentials = Object.new
 
     captured_path = nil
     captured_token_path = nil
     captured_authorizer_args = nil
-    captured_user_id = nil
+    captured = {}
 
-    mock_authorizer.define_singleton_method(:get_credentials) do |user_id|
-      captured_user_id = user_id
-      mock_credentials
-    end
+    mock_authorizer = mock_authorizer_with_credentials(captured, mock_credentials)
 
     Google::Auth::ClientId.stub :from_file, lambda { |path|
       captured_path = path
@@ -114,23 +110,19 @@ class TestMain < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal CREDENTIALS_PATH, captured_path
     assert_equal TOKEN_PATH, captured_token_path
     assert_equal [mock_client_id, SCOPE, mock_token_store], captured_authorizer_args
-    assert_equal "default", captured_user_id
+    assert_equal "default", captured[:user_id]
   end
 
   def test_authorize_with_invalid_credentials
     mock_client_id = Object.new
     mock_token_store = Object.new
-    mock_authorizer = Object.new
 
     captured_path = nil
     captured_token_path = nil
     captured_authorizer_args = nil
-    captured_user_id = nil
+    captured = {}
 
-    mock_authorizer.define_singleton_method(:get_credentials) do |user_id|
-      captured_user_id = user_id
-      nil
-    end
+    mock_authorizer = mock_authorizer_with_credentials(captured, nil)
 
     Google::Auth::ClientId.stub :from_file, lambda { |path|
       captured_path = path
@@ -154,7 +146,7 @@ class TestMain < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal CREDENTIALS_PATH, captured_path
     assert_equal TOKEN_PATH, captured_token_path
     assert_equal [mock_client_id, SCOPE, mock_token_store], captured_authorizer_args
-    assert_equal "default", captured_user_id
+    assert_equal "default", captured[:user_id]
   end
 
   def test_fetch_today_events

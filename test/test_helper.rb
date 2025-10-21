@@ -24,7 +24,7 @@ module TestHelper
     ENV.delete("GOOGLE_TOKEN_YAML")
   end
 
-  # helper to stub top-level methods defined in lib/main.rb
+  # Helper to stub top-level methods defined in lib/main.rb
   def stub_global(method_name, replacement)
     replacement_proc = replacement.respond_to?(:call) ? replacement : ->(*_) { replacement }
 
@@ -52,6 +52,57 @@ module TestHelper
       original_method.bind(self).call(*args, &block)
     end
     Kernel.send(visibility, method_name)
+  end
+
+  # Create a mock authorizer that captures the user_id passed to get_credentials
+  # and returns the provided return_value (or nil).
+  #
+  # Usage:
+  #   captured = {}
+  #   mock = mock_authorizer_with_credentials(captured, return_value)
+  #   # after calling code, captured[:user_id] contains the value passed in
+  # Create a mock authorizer that captures the user_id passed to get_credentials
+  # and returns the provided return_value (or nil).
+  #
+  # Additionally, you can provide an `extra_methods` hash to define other
+  # singleton methods on the mock. Each entry should be method_name => return_value_or_proc.
+  # The arguments passed to those methods will be captured into `capture_hash` under
+  # the method name as a symbol (e.g. capture_hash[:get_and_store_credentials_from_code] = [args...]).
+  #
+  # An optional block is yielded the mock and capture_hash for further customization.
+  #
+  # Usage examples:
+  #   captured = {}
+  #   mock = mock_authorizer_with_credentials(captured, mock_credentials)
+  #
+  #   # with extra method that returns a fixed value
+  #   mock = mock_authorizer_with_credentials(captured, nil, extra_methods: { get_and_store_credentials_from_code: mock_credentials })
+  #
+  #   # with extra method implemented as a proc
+  #   mock = mock_authorizer_with_credentials(captured, nil, extra_methods: { foo: ->(a, b) { a + b } })
+  def mock_authorizer_with_credentials( # rubocop:disable Metrics/MethodLength
+    capture_hash, return_value = nil, extra_methods: {}
+  )
+    mock_authorizer = Object.new
+    mock_authorizer.define_singleton_method(:get_credentials) do |user_id|
+      capture_hash[:user_id] = user_id
+      return_value
+    end
+
+    extra_methods.each do |method_name, ret|
+      mock_authorizer.define_singleton_method(method_name) do |*args|
+        capture_hash[method_name.to_sym] = args
+        if ret.respond_to?(:call)
+          ret.call(*args)
+        else
+          ret
+        end
+      end
+    end
+
+    yield mock_authorizer, capture_hash if block_given?
+
+    mock_authorizer
   end
 
   # Create mock Google Calendar event

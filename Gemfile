@@ -8,3 +8,5 @@ group :development do
   gem "rubocop"
   gem "solargraph"
 end
+
+gem "webrick", "~> 1.9"

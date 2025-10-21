@@ -24,7 +24,7 @@ module TestHelper
     ENV.delete("GOOGLE_TOKEN_YAML")
   end
 
-  # Helper to stub top-level methods defined in lib/main.rb
+  # Helper to stub top-level methods
   def stub_global(method_name, replacement)
     replacement_proc = replacement.respond_to?(:call) ? replacement : ->(*_) { replacement }
     raise ArgumentError, "stub_global requires a block" unless block_given?
@@ -58,13 +58,6 @@ module TestHelper
     Kernel.send(visibility, method_name)
   end
 
-  # Create a mock authorizer that captures the user_id passed to get_credentials
-  # and returns the provided return_value (or nil).
-  #
-  # Usage:
-  #   captured = {}
-  #   mock = mock_authorizer_with_credentials(captured, return_value)
-  #   # after calling code, captured[:user_id] contains the value passed in
   # Create a mock authorizer that captures the user_id passed to get_credentials
   # and returns the provided return_value (or nil).
   #

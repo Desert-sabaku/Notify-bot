@@ -55,7 +55,7 @@ at_exit do
   end
 end
 
-OOB_URI = "urn:ietf:wg:oauth:2.0:oob".freeze
+REDIRECT_URI = "http://127.0.0.1:8080/auth/callback".freeze
 APPLICATION_NAME = "Discord Calendar Notifier".freeze
 CREDENTIALS_PATH = "credentials.json".freeze
 TOKEN_PATH = "token.yaml".freeze
@@ -76,13 +76,16 @@ def authorize
   credentials = authorizer.get_credentials(user_id)
 
   if credentials.nil?
-    # If the authorizer doesn't support generating an auth URL (e.g. a simple test mock),
-    # preserve the previous behavior and raise a helpful runtime error so tests can assert it.
+
+    if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+      raise "Google認証が必要ですが、CI では対話認証できません。token.yaml を Secret(GOOGLE_TOKEN_YAML) として設定してください。"
+    end
+
     unless authorizer.respond_to?(:get_authorization_url)
       raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
     end
 
-    auth_url = authorizer.get_authorization_url(base_url: OOB_URI)
+    auth_url = authorizer.get_authorization_url(base_url: REDIRECT_URI)
     puts "認証用 URL をブラウザで開き、許可後に表示されるコードを貼り付けてください:"
     puts auth_url
 
@@ -95,7 +98,7 @@ def authorize
       when /darwin/
         system("open", auth_url)
       when /mswin|mingw|cygwin/
-        system("start", auth_url)
+        system("cmd", "/c", "start", "", auth_url)
       end
     rescue StandardError
       # ignore failures to auto-open
@@ -103,11 +106,13 @@ def authorize
 
     print "認可コード: "
     code = gets&.chomp
+    raise "認可コードが空です。認証を最初からやり直してください。" if code.to_s.strip.empty?
+
     begin
       credentials = authorizer.get_and_store_credentials_from_code(
         user_id: user_id,
         code: code,
-        base_url: OOB_URI
+        base_url: REDIRECT_URI
       )
     rescue StandardError => e
       raise "Google認証に失敗しました（コード交換エラー）: #{e.message}"

@@ -29,15 +29,17 @@ end
 CREATED_FILES = []
 
 # Write credential files with restrictive permissions
-if ENV["GOOGLE_CREDENTIALS_JSON"] && !ENV["GOOGLE_CREDENTIALS_JSON"].empty?
-  File.write("credentials.json", ENV["GOOGLE_CREDENTIALS_JSON"])
-  File.chmod(0o600, "credentials.json") # Owner read/write only
+if (v = ENV["GOOGLE_CREDENTIALS_JSON"]).to_s.strip != ""
+  File.open("credentials.json", File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
+    file.write(v)
+  end
   CREATED_FILES << "credentials.json"
 end
 
-if ENV["GOOGLE_TOKEN_YAML"] && !ENV["GOOGLE_TOKEN_YAML"].empty?
-  File.write("token.yaml", ENV["GOOGLE_TOKEN_YAML"])
-  File.chmod(0o600, "token.yaml") # Owner read/write only
+if (v = ENV["GOOGLE_TOKEN_YAML"]).to_s.strip != ""
+  File.open("token.yaml", File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
+    file.write(v)
+  end
   CREATED_FILES << "token.yaml"
 end
 

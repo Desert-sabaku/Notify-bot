@@ -1,146 +1,43 @@
-# Notify-bot
+# Syodosima
 
-Google Calendar から今日の予定を取得し、Discord チャンネルに通知する Bot です。
+TODO: Delete this and the text below, and describe your gem
 
-## 機能
+Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/syodosima`. To experiment with that code, run `bin/console` for an interactive prompt.
 
--   Google Calendar から今日の予定を自動取得
--   時刻付きイベントと終日イベントを適切に表示
--   Discord チャンネルに通知を送信
--   GitHub Actions での自動実行に対応
+## Installation
 
-## 依存関係
+TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
 
-このアプリケーションは以下の Ruby gem を使用しています：
-
-### 必須依存関係
-
--   `discordrb` - Discord API を操作するためのライブラリ
--   `google-api-client` - Google Calendar API を操作するためのライブラリ
--   `dotenv` - 環境変数を管理するためのライブラリ
-
-### 開発用依存関係
-
--   `rubocop` - Ruby コードのスタイルチェック
--   `solargraph` - Ruby の言語サーバー
-
-## インストール
-
-1. リポジトリをクローンします：
+Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-git clone https://github.com/Desert-sabaku/Notify-bot.git
-cd Notify-bot
+bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 ```
 
-2. 依存関係をインストールします：
+If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-bundle install
+gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 ```
 
-## 設定
+## Usage
 
-### Google Calendar API の設定
+TODO: Write usage instructions here
 
-1. [Google Cloud Console](https://console.cloud.google.com/)で新しいプロジェクトを作成
-2. Google Calendar API を有効化
-3. 認証情報を作成（OAuth 2.0 クライアント ID）
-4. `credentials.json`ファイルをダウンロード
+## Development
 
-### Discord Bot の設定
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-1. [Discord Developer Portal](https://discord.com/developers/applications)で新しいアプリケーションを作成
-2. Bot を作成し、トークンを取得
-3. Bot をサーバーに招待し、チャンネル ID を取得
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
-## 環境変数の設定
+## Contributing
 
-以下の環境変数を設定してください：
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/syodosima. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/syodosima/blob/gem/CODE_OF_CONDUCT.md).
 
-### ローカル実行時
+## License
 
-`.env`ファイルを作成し、以下の内容を記述：
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
-```env
-DISCORD_BOT_TOKEN=your_discord_bot_token_here
-DISCORD_CHANNEL_ID=your_channel_id_here
-GOOGLE_CREDENTIALS_JSON={"type":"service_account","project_id":"..."}  # credentials.jsonの内容
-GOOGLE_TOKEN_YAML=credentials_yaml_content_here  # token.yamlの内容
-```
+## Code of Conduct
 
-### GitHub Actions 実行時
-
-GitHub リポジトリの Settings > Secrets and variables > Actions で以下のシークレットを設定：
-
--   `DISCORD_BOT_TOKEN`: Discord Bot のトークン
--   `DISCORD_CHANNEL_ID`: 通知を送信する Discord チャンネル ID
--   `GOOGLE_CREDENTIALS_JSON`: credentials.json ファイルの内容
--   `GOOGLE_TOKEN_YAML`: token.yaml ファイルの内容
-
-## 利用方法
-
-### ローカル実行
-
-1. 初回実行時は Google 認証が必要です：
-
-```bash
-ruby main.rb
-```
-
-2. ブラウザで Google 認証を行い、表示されたコードをコンソールに入力
-3. 認証情報が`token.yaml`に保存されます
-
-### GitHub Actions での自動実行
-
-GitHub Actions のワークフローファイル（例: `.github/workflows/notify.yml`）を作成：
-
-```yaml
-name: Daily Calendar Notification
-
-on:
-    schedule:
-        - cron: "0 0 * * *" # 毎日午前0時（UTC）に実行
-    workflow_dispatch: # 手動実行も可能
-
-jobs:
-    notify:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: ruby/setup-ruby@v1
-              with:
-                  ruby-version: "3.4"
-            - name: Install dependencies
-              run: bundle install
-            - name: Run notification bot
-              run: ruby main.rb
-              env:
-                  DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-                  DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-                  GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-                  GOOGLE_TOKEN_YAML: ${{ secrets.GOOGLE_TOKEN_YAML }}
-```
-
-## 通知の例
-
-Bot が送信するメッセージの例：
-
-```
-おはようございます！
-今日の予定をお知らせします。
-
-【09:00〜10:00】 チームミーティング
-【13:00〜14:00】 プロジェクトレビュー
-【終日】 休日
-```
-
-## 注意事項
-
--   初回実行時は Google 認証が必要です
--   タイムゾーンはシステムの設定に従います
--   Google Calendar のプライマリカレンダーの予定のみを取得します
-
-## ライセンス
-
-このプロジェクトは MIT ライセンスの下で公開されています。
+Everyone interacting in the Syodosima project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/syodosima/blob/gem/CODE_OF_CONDUCT.md).

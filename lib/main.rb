@@ -5,6 +5,7 @@ require "googleauth/stores/file_token_store"
 require "fileutils"
 require "discordrb"
 require "date"
+require "dotenv/load"
 
 File.write("credentials.json", ENV["GOOGLE_CREDENTIALS_JSON"]) if ENV["GOOGLE_CREDENTIALS_JSON"]
 File.write("token.yaml", ENV["GOOGLE_TOKEN_YAML"]) if ENV["GOOGLE_TOKEN_YAML"]
@@ -44,7 +45,8 @@ def fetch_today_events # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   service.authorization = authorize
 
   jst_offset = "+09:00"
-  today = Date.today
+  now_jst = DateTime.now.new_offset(jst_offset)
+  today = now_jst.to_date
   time_min = DateTime.new(today.year, today.month, today.day, 0, 0, 0, jst_offset).rfc3339
   time_max = DateTime.new(today.year, today.month, today.day, 23, 59, 59, jst_offset).rfc3339
 

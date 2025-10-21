@@ -27,6 +27,7 @@ module TestHelper
   # Helper to stub top-level methods defined in lib/main.rb
   def stub_global(method_name, replacement)
     replacement_proc = replacement.respond_to?(:call) ? replacement : ->(*_) { replacement }
+    raise ArgumentError, "stub_global requires a block" unless block_given?
 
     visibility = if Object.private_method_defined?(method_name)
                    :private

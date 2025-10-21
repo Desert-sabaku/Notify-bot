@@ -1,5 +1,4 @@
 require_relative "test_helper"
-require_relative "../lib/main"
 
 class BotSpy
   attr_reader :sent_messages, :run_argument
@@ -56,8 +55,12 @@ class FakeCalendarService
   end
 end
 
-class TestMain < Minitest::Test # rubocop:disable Metrics/ClassLength
+class TestSyodosima < Minitest::Test
   include TestHelper
+
+  def test_that_it_has_a_version_number
+    refute_nil ::Syodosima::VERSION
+  end
 
   def setup
     setup_env_vars
@@ -217,6 +220,16 @@ class TestMain < Minitest::Test # rubocop:disable Metrics/ClassLength
     assert_equal @channel_id, result[:channel]
   end
 
+  def test_main_and_module_run_consistent
+    events = [create_mock_event("一致テスト")]
+
+    top = run_main_and_capture_message(events)
+    mod = run_module_and_capture_message(events)
+
+    assert_equal top[:message], mod[:message]
+    assert_equal top[:channel], mod[:channel]
+  end
+
   private
 
   def run_main_and_capture_message(events)
@@ -225,6 +238,23 @@ class TestMain < Minitest::Test # rubocop:disable Metrics/ClassLength
     stub_global(:fetch_today_events, events) do
       Discordrb::Bot.stub :new, bot_spy do
         capture_io { main }
+      end
+    end
+
+    last_message = bot_spy.sent_messages.last
+    {
+      message: last_message&.last,
+      channel: last_message&.first,
+      bot: bot_spy
+    }
+  end
+
+  def run_module_and_capture_message(events)
+    bot_spy = BotSpy.new
+
+    stub_global(:fetch_today_events, events) do
+      Discordrb::Bot.stub :new, bot_spy do
+        capture_io { Syodosima.run }
       end
     end
 

@@ -1,9 +1,16 @@
 {
     "cSpell.words": [
+        "autorun",
+        "CREAT",
         "discordrb",
         "dotenv",
+        "evend",
         "googleauth",
+        "mswin",
         "rubocop",
-        "solargraph"
+        "solargraph",
+        "syodosima",
+        "TRUNC",
+        "WRONLY"
     ]
 }

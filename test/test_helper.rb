@@ -36,6 +36,12 @@ module TestHelper
                    :public
                  end
 
+    unless Object.private_method_defined?(method_name) ||
+           Object.protected_method_defined?(method_name) ||
+           Object.method_defined?(method_name)
+      raise NameError, "Undefined top-level method '#{method_name}'"
+    end
+
     original_method = Object.instance_method(method_name)
 
     Object.define_method(method_name, replacement_proc)
@@ -45,12 +51,10 @@ module TestHelper
 
     yield
   ensure
-    Object.define_method(method_name, original_method)
+    Object.define_method(method_name) { |*args, &block| original_method.bind(self).call(*args, &block) }
     Object.send(visibility, method_name)
-
-    Kernel.define_method(method_name) do |*args, &block|
-      original_method.bind(self).call(*args, &block)
-    end
+    Kernel.define_method(method_name) { |*args, &block| original_method.bind(self).call(*args, &block) }
+    Kernel.send(visibility, method_name)
     Kernel.send(visibility, method_name)
   end
 

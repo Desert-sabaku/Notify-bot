@@ -1,42 +1,4 @@
 require_relative "test_helper"
-
-class BotSpy
-  attr_reader :sent_messages, :run_argument
-
-  def initialize
-    @sent_messages = []
-  end
-
-  def ready(&block)
-    @ready_block = block
-  end
-
-  def run(async)
-    @run_argument = async
-    @ready_block&.call(nil)
-  end
-
-  def send_message(channel, message)
-    @sent_messages << [channel, message]
-  end
-
-  def stop
-    @stopped = true
-  end
-
-  def join
-    @joined = true
-  end
-
-  def stopped?
-    !!@stopped
-  end
-
-  def joined?
-    !!@joined
-  end
-end
-
 class FakeCalendarService
   ClientOptions = Struct.new(:application_name)
   Response = Struct.new(:items)

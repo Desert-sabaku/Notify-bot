@@ -1,5 +1,6 @@
 require_relative "test_helper"
 require "webrick"
+require "ostruct"
 
 class TestOauthHelpers < Minitest::Test
   include TestHelper

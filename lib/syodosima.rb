@@ -61,22 +61,6 @@ module Syodosima
     end
   end
 
-  # Helper: try to open auth URL in browser (best-effort)
-  def self.open_auth_url(auth_url)
-    host_os = RbConfig::CONFIG["host_os"]
-    case host_os
-    when /linux|bsd/
-      system("xdg-open", auth_url)
-    when /darwin/
-      system("open", auth_url)
-    when /mswin|mingw|cygwin/
-      system("cmd", "/c", "start", "", auth_url)
-    end
-  rescue StandardError
-    logger.warn("ブラウザを自動で開けませんでした。URLを手動で開いてください：")
-    logger.warn(auth_url)
-  end
-
   def self.fetch_today_events
     service = Google::Apis::CalendarV3::CalendarService.new
     service.client_options.application_name = APPLICATION_NAME

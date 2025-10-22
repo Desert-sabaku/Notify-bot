@@ -33,16 +33,10 @@ module Syodosima
     end
 
     bot.run(true)
+    bot.join
 
-    # Add timeout to prevent indefinite blocking
-    timeout = 30
-    start_time = Time.now
-    sleep 0.1 while bot.connected? && (Time.now - start_time < timeout)
-
-    raise "Bot operation timed out after #{timeout} seconds" if Time.now - start_time >= timeout
     raise "Message delivery failed" if error_occurred
 
-    bot.join
     logger.info("Message sent and bot stopped.")
   end
 end

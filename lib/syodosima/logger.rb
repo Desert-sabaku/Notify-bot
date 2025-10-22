@@ -17,17 +17,16 @@ module Syodosima
   # LOG_FORMAT: text|json (default text)
 
   output = ENV.fetch("LOG_OUTPUT", "stdout")
-  io = case output.downcase
-       when "stdout"
-         $stdout
-       when "stderr"
-         $stderr
-       else
-         # treat as file path
-         File.open(output, "a")
-       end
-
-  @logger = Logger.new(io)
+  logger_output = case output.downcase
+                  when "stdout"
+                    $stdout
+                  when "stderr"
+                    $stderr
+                  else
+                    # treat as file path
+                    output
+                  end
+  @logger = Logger.new(logger_output)
 
   # Map LOG_LEVEL env value to Logger level
   level_map = {

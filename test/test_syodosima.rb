@@ -79,6 +79,10 @@ class TestSyodosima < Minitest::Test
   end
 
   def test_authorize_with_invalid_credentials
+    # Ensure we're not in CI mode for this test
+    original_ci = ENV.delete("CI")
+    original_github_actions = ENV.delete("GITHUB_ACTIONS")
+
     mock_client_id = Object.new
     mock_token_store = Object.new
 
@@ -112,6 +116,9 @@ class TestSyodosima < Minitest::Test
     assert_equal Syodosima::TOKEN_PATH, captured_token_path
     assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
+  ensure
+    ENV["CI"] = original_ci if original_ci
+    ENV["GITHUB_ACTIONS"] = original_github_actions if original_github_actions
   end
 
   def test_fetch_today_events
@@ -229,12 +236,7 @@ class TestSyodosima < Minitest::Test
   end
 
   def reset_constant(name, value)
-    if Syodosima.const_defined?(name)
-      Syodosima.send(:remove_const, name)
-      Syodosima.const_set(name, value)
-    else
-      Object.send(:remove_const, name)
-      Object.const_set(name, value)
-    end
+    Syodosima.send(:remove_const, name) if Syodosima.const_defined?(name)
+    Syodosima.const_set(name, value)
   end
 end

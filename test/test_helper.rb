@@ -87,7 +87,7 @@ module TestHelper
   #
   #   # with extra method implemented as a proc
   #   mock = mock_authorizer_with_credentials(captured, nil, extra_methods: { foo: ->(a, b) { a + b } })
-  def mock_authorizer_with_credentials( # rubocop:disable Metrics/MethodLength
+  def mock_authorizer_with_credentials(
     capture_hash, return_value = nil, extra_methods: {}
   )
     capture_hash ||= {}

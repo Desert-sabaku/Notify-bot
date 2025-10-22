@@ -1,6 +1,9 @@
 {
     "cSpell.words": [
+        "autocorrect",
+        "autocorrection",
         "autorun",
+        "bindir",
         "CREAT",
         "discordrb",
         "dotenv",
@@ -8,7 +11,9 @@
         "evend",
         "googleauth",
         "mswin",
+        "popen",
         "progname",
+        "readlines",
         "rubocop",
         "SANADA",
         "solargraph",

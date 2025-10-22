@@ -20,6 +20,10 @@ class TestOauthPStoreHandling < Minitest::Test
   end
 
   def test_corrupted_token_file_is_backed_up_and_deleted_non_ci
+    # Ensure we're not in CI mode for this test
+    original_ci = ENV.delete("CI")
+    original_github_actions = ENV.delete("GITHUB_ACTIONS")
+
     # Create a dummy token file to simulate a corrupted store
     File.write(@token_path, "corrupted")
 
@@ -51,6 +55,9 @@ class TestOauthPStoreHandling < Minitest::Test
         end
       end
     end
+  ensure
+    ENV["CI"] = original_ci if original_ci
+    ENV["GITHUB_ACTIONS"] = original_github_actions if original_github_actions
   end
 
   def test_corrupted_token_file_in_ci_raises_no_delete

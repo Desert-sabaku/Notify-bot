@@ -17,8 +17,23 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
 
   require "logger"
 
-  # Module-level logger. Default to STDOUT, but can be overridden in tests.
-  @logger = Logger.new($stdout)
+  # Module-level logger. Configurable via environment variables for CI.
+  # LOG_LEVEL: DEBUG/INFO/WARN/ERROR/FATAL/UNKNOWN (default INFO, or WARN in CI)
+  # LOG_OUTPUT: stdout|stderr|/path/to/file (default stdout)
+  # LOG_FORMAT: text|json (default text)
+
+  output = ENV.fetch("LOG_OUTPUT", "stdout")
+  io = case output.downcase
+       when "stdout"
+         $stdout
+       when "stderr"
+         $stderr
+       else
+         # treat as file path
+         File.open(output, "a")
+       end
+
+  @logger = Logger.new(io)
 
   # Map LOG_LEVEL env value to Logger level
   level_map = {
@@ -29,13 +44,24 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
     "FATAL" => Logger::FATAL,
     "UNKNOWN" => Logger::UNKNOWN
   }
-  env_level = ENV.fetch("LOG_LEVEL", "INFO").upcase
-  @logger.level = level_map.fetch(env_level, Logger::INFO)
 
-  # Custom formatter: timestamp, app name, level, message
-  @logger.formatter = proc do |severity, datetime, _progname, msg|
-    timestamp = datetime.iso8601
-    "#{timestamp} [#{APPLICATION_NAME}] #{severity} -- : #{msg}\n"
+  default_level = ENV["CI"] || ENV["GITHUB_ACTIONS"] ? Logger::WARN : Logger::INFO
+
+  env_level = ENV["LOG_LEVEL"]&.upcase
+  @logger.level = env_level ? level_map.fetch(env_level, Logger::INFO) : default_level
+
+  # Formatter: text or json
+  format = ENV.fetch("LOG_FORMAT", "text").downcase
+  if format == "json"
+    require "json"
+    @logger.formatter = proc do |severity, datetime, _progname, msg|
+      "#{{ timestamp: datetime.iso8601, app: APPLICATION_NAME, level: severity, message: msg }.to_json}\n"
+    end
+  else
+    @logger.formatter = proc do |severity, datetime, _progname, msg|
+      timestamp = datetime.iso8601
+      "#{timestamp} [#{APPLICATION_NAME}] #{severity} -- : #{msg}\n"
+    end
   end
 
   def self.logger
@@ -75,7 +101,7 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
     abort msg
   end
 
-  def self.write_credential_files! # rubocop:disable Metrics/MethodLength
+  def self.write_credential_files!
     if (v = ENV["GOOGLE_CREDENTIALS_JSON"]).to_s.strip != ""
       File.open(CREDENTIALS_PATH, File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
         file.write(v)

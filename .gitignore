@@ -1,7 +1,10 @@
 # Secret files
 .env
 credentials.json
-token.yaml
+token.yaml*
 
 # Bundler
 /vendor/
+
+# release
+pkg/

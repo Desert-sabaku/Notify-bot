@@ -15,7 +15,7 @@ module Syodosima
     rescue StandardError => e
       # Some environments may raise a PStore::Error when the token file is corrupted.
       # Avoid requiring the pstore library; detect by class name instead.
-      raise unless e.instance_of?(::PStore::Error)
+      raise unless e.is_a?(::PStore::Error)
 
       logger.warn(Messages.corrupted_token_log(TOKEN_PATH, e.class, e.message))
 
@@ -129,7 +129,7 @@ module Syodosima
 
   # Create WEBrick server with minimal logging (extracted for clarity)
   def self.create_webrick_server(port)
-    WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new("/dev/null"), AccessLog: [])
+    WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new(File::NULL), AccessLog: [])
   end
 
   # Return a proc that handles oauth callback requests and stores the code

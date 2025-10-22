@@ -61,9 +61,6 @@ module Syodosima
     end
   end
 
-  # OAuth helpers (authorize, interactive flow, and local callback server)
-  # are implemented in `lib/syodosima/oauth.rb` and required above.
-
   # Helper: try to open auth URL in browser (best-effort)
   def self.open_auth_url(auth_url)
     host_os = RbConfig::CONFIG["host_os"]
@@ -107,9 +104,6 @@ module Syodosima
     [time_min, time_max]
   end
 
-  # Discord helpers (bot lifecycle and message delivery) are implemented
-  # in `lib/syodosima/discord.rb`.
-
   def self.run
     validate_env!
     write_credential_files!
@@ -123,6 +117,4 @@ module Syodosima
     send_discord_message(message)
     logger.info("完了しました！")
   end
-
-  # message builders moved to `lib/syodosima/message.rb`
 end

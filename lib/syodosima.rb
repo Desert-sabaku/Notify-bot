@@ -48,12 +48,12 @@ module Syodosima
     File.open(path, File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
       file.write(v)
     end
-    CREATED_FILES << path
+    created_files << path
   end
 
   at_exit do
     if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-      CREATED_FILES.each do |file|
+      created_files.each do |file|
         File.delete(file) if File.exist?(file)
       rescue StandardError => e
         Syodosima.logger.warn("Warning: Failed to cleanup #{file}: #{e.message}")

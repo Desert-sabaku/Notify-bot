@@ -13,6 +13,7 @@
         "mswin",
         "popen",
         "progname",
+        "pstore",
         "readlines",
         "rubocop",
         "rubygems",

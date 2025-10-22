@@ -19,7 +19,24 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
 
   # Module-level logger. Default to STDOUT, but can be overridden in tests.
   @logger = Logger.new($stdout)
-  @logger.level = Logger::INFO
+
+  # Map LOG_LEVEL env value to Logger level
+  level_map = {
+    "DEBUG" => Logger::DEBUG,
+    "INFO" => Logger::INFO,
+    "WARN" => Logger::WARN,
+    "ERROR" => Logger::ERROR,
+    "FATAL" => Logger::FATAL,
+    "UNKNOWN" => Logger::UNKNOWN
+  }
+  env_level = ENV.fetch("LOG_LEVEL", "INFO").upcase
+  @logger.level = level_map.fetch(env_level, Logger::INFO)
+
+  # Custom formatter: timestamp, app name, level, message
+  @logger.formatter = proc do |severity, datetime, _progname, msg|
+    timestamp = datetime.iso8601
+    "#{timestamp} [#{APPLICATION_NAME}] #{severity} -- : #{msg}\n"
+  end
 
   def self.logger
     @logger

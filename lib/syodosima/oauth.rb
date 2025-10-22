@@ -1,3 +1,5 @@
+require "fileutils"
+
 # OAuth helper functions
 #
 # Contains helpers for performing Google OAuth interactive flows and
@@ -22,36 +24,37 @@ module Syodosima
       # In CI, do not attempt deletion or interactive auth; surface a clear error.
       raise Messages::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
-      if File.exist?(TOKEN_PATH)
-        begin
-          ts = Time.now.utc.strftime("%Y%m%d%H%M%S")
-          backup = "#{TOKEN_PATH}.#{ts}.bak"
-          begin
-            File.rename(TOKEN_PATH, backup)
-            logger.warn("#{Messages::BACKUP_CREATED} #{backup}")
-          rescue StandardError
-            require "fileutils"
-            FileUtils.cp(TOKEN_PATH, backup)
-            logger.warn("#{Messages::BACKUP_COPIED} #{backup}")
-            File.delete(TOKEN_PATH)
-          end
-        rescue StandardError => delete_err
-          logger.warn(Messages.backup_failed_log(TOKEN_PATH, delete_err.message))
-        end
-      end
-
-      # Recreate client_id, token store, and authorizer, then retry once
+      handle_corrupted_token
+      # Retry once after cleanup
       client_id, token_store = client_id_and_token_store
       authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
       credentials = authorizer.get_credentials(user_id)
-
-      # re-raise non-PStore errors
     end
 
     return credentials unless credentials.nil?
 
     # perform interactive authorization flow (extracted to reduce complexity)
     interactive_auth_flow(authorizer, user_id)
+  end
+
+  # Handle corrupted token file by backing up and deleting
+  def self.handle_corrupted_token
+    return unless File.exist?(TOKEN_PATH)
+
+    begin
+      ts = Time.now.utc.strftime("%Y%m%d%H%M%S")
+      backup = "#{TOKEN_PATH}.#{ts}.bak"
+      begin
+        File.rename(TOKEN_PATH, backup)
+        logger.warn("#{Messages::BACKUP_CREATED} #{backup}")
+      rescue StandardError
+        FileUtils.cp(TOKEN_PATH, backup)
+        logger.warn("#{Messages::BACKUP_COPIED} #{backup}")
+        File.delete(TOKEN_PATH)
+      end
+    rescue StandardError => e
+      logger.warn(Messages.backup_failed_log(TOKEN_PATH, e.message))
+    end
   end
 
   # Extracted interactive auth flow to reduce method complexity
@@ -63,7 +66,7 @@ module Syodosima
     port = oauth_port
     redirect_uri = redirect_uri_for_port(port)
 
-    server, code_container, server_thread = start_oauth_server(port)
+    _server, code_container, server_thread = start_oauth_server(port)
 
     auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
     logger.info(Messages::BROWSER_AUTH_PROMPT)
@@ -85,9 +88,6 @@ module Syodosima
       )
     rescue StandardError => e
       raise Messages.auth_code_exchange_error(e.message)
-    ensure
-      # ensure server is shutdown if still running
-      server.shutdown if server && server.status != :Stop
     end
 
     credentials

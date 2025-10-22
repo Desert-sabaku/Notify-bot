@@ -51,12 +51,13 @@ module Syodosima
     created_files << path
   end
 
-  at_exit do
-    if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+  # Register at_exit handler only in CI environments
+  if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+    at_exit do
       created_files.each do |file|
         File.delete(file) if File.exist?(file)
       rescue StandardError => e
-        Syodosima.logger.warn("Warning: Failed to cleanup #{file}: #{e.message}")
+        warn "Warning: Failed to cleanup #{file}: #{e.message}"
       end
     end
   end

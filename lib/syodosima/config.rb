@@ -28,5 +28,5 @@ module Syodosima
 
   # Track files created at runtime so CI cleanup can remove them
   # This array is intentionally mutable so runtime code can append paths.
-  CREATED_FILES = [].freeze
+  CREATED_FILES = [] # rubocop:disable Style/MutableConstant
 end

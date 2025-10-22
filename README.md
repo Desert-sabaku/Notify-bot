@@ -1,6 +1,6 @@
 # Syodosima
 
-Syodosima gem is a tool to notify Discord of appointments on a given Google Calendar and its CLI wrapper.
+Syodosima gem is a tool to notify Discord of appointments on a given Google Calendar and provides a CLI wrapper.
 
 ## Installation
 

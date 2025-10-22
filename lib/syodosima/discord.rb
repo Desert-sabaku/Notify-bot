@@ -10,12 +10,12 @@ module Syodosima
   # @return [void]
   # @raise [ArgumentError] if message is nil or empty
   def self.send_discord_message(message)
-    raise ArgumentError, "Message cannot be nil or empty" if message.nil? || message.empty?
+    raise ArgumentError, MessageConstants::DISCORD_MESSAGE_NIL_EMPTY if message.nil? || message.empty?
 
     bot = create_discord_bot(DISCORD_BOT_TOKEN)
     deliver_message_with_bot(bot, DISCORD_CHANNEL_ID, message)
   rescue StandardError => e
-    logger.error("Failed to send Discord message: #{e.message}")
+    logger.error(MessageConstants.discord_failed_send(e.message))
   end
 
   # Create a Discord bot instance (extracted for testability)
@@ -37,10 +37,10 @@ module Syodosima
     error_occurred = false
 
     bot.ready do |_event|
-      logger.info("Bot is ready!")
+      logger.info(MessageConstants::DISCORD_BOT_READY)
       bot.send_message(channel, message)
     rescue StandardError => e
-      logger.error("Failed to send message: #{e.message}")
+      logger.error(MessageConstants.discord_failed_send_message(e.message))
       error_occurred = true
     ensure
       bot.stop
@@ -49,8 +49,8 @@ module Syodosima
     bot.run(true)
     bot.join
 
-    raise "Message delivery failed" if error_occurred
+    raise MessageConstants::DISCORD_DELIVERY_FAILED if error_occurred
 
-    logger.info("Message sent and bot stopped.")
+    logger.info(MessageConstants::DISCORD_MESSAGE_SENT)
   end
 end

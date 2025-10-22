@@ -9,9 +9,9 @@ module Syodosima
   # @param [Array<Google::Apis::CalendarV3::Event>] events list of events
   # @return [String] the formatted message
   def self.build_message(events)
-    return "おはようございます！\n今日の予定はありません。" if events.empty?
+    return MessageConstants::MESSAGE_NO_EVENTS if events.empty?
 
-    message = "おはようございます！\n今日の予定をお知らせします。\n\n"
+    message = MessageConstants::MESSAGE_WITH_EVENTS_PREFIX
     events.each { |e| message += format_event(e) }
     message
   end
@@ -25,9 +25,9 @@ module Syodosima
       start_time = event.start.date_time
       end_time = event.end.date_time
       formatted_time = "#{start_time.strftime('%H:%M')}〜#{end_time.strftime('%H:%M')}"
-      "【#{formatted_time}】 #{event.summary}\n"
+      MessageConstants.event_time_format(formatted_time, event.summary)
     else
-      "【終日】 #{event.summary}\n"
+      MessageConstants.event_all_day_format(event.summary)
     end
   end
 end

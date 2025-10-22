@@ -144,7 +144,7 @@ module Syodosima
     server_thread = Thread.new do
       server.start
     rescue StandardError => e
-      warn "WEBrick server error: #{e.message}"
+      warn MessageConstants.webrick_error(e.message)
     end
 
     [server, code_container, server_thread]

@@ -140,7 +140,7 @@ class TestSyodosima < Minitest::Test
           mock_authorizer
         } do
           error = assert_raises(RuntimeError) { Syodosima.authorize }
-          expected_message = "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
+          expected_message = "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
           assert_equal expected_message, error.message
         end
       end
@@ -232,7 +232,7 @@ class TestSyodosima < Minitest::Test
 
   private
 
-  def run_main_and_capture_message(events)
+  def run_module_and_capture_message(events)
     bot_spy = BotSpy.new
 
     Syodosima.stub :fetch_today_events, events do
@@ -249,7 +249,7 @@ class TestSyodosima < Minitest::Test
     }
   end
 
-  def run_module_and_capture_message(events)
+  def run_main_and_capture_message(events)
     bot_spy = BotSpy.new
 
     Syodosima.stub :fetch_today_events, events do

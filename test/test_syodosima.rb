@@ -268,10 +268,10 @@ class TestSyodosima < Minitest::Test
 
   def reset_constant(name, value)
     if Syodosima.const_defined?(name)
-      Syodosima.send(:remove_const, name) if Syodosima.const_defined?(name)
+      Syodosima.send(:remove_const, name)
       Syodosima.const_set(name, value)
     else
-      Object.send(:remove_const, name) if Object.const_defined?(name)
+      Object.send(:remove_const, name)
       Object.const_set(name, value)
     end
   end

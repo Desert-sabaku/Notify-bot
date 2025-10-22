@@ -120,6 +120,7 @@ GEM
     public_suffix (6.0.2)
     racc (1.8.1)
     rainbow (3.1.1)
+    rake (13.3.0)
     rbs (3.9.5)
       logger
     regexp_parser (2.11.3)
@@ -208,6 +209,7 @@ DEPENDENCIES
   discordrb
   dotenv
   google-api-client
+  rake (~> 13.3)
   rubocop
   solargraph
   webrick (~> 1.9)

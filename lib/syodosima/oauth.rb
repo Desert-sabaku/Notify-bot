@@ -19,12 +19,10 @@ module Syodosima
 
   # Extracted interactive auth flow to reduce method complexity
   def self.interactive_auth_flow(authorizer, user_id)
-    if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+    if ENV["CI"] ||
+       ENV["GITHUB_ACTIONS"] ||
+       !authorizer.respond_to?(:get_authorization_url)
       raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
-    end
-
-    unless authorizer.respond_to?(:get_authorization_url)
-      raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
     end
 
     port = oauth_port

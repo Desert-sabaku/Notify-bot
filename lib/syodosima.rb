@@ -15,6 +15,23 @@ require "uri"
 module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
   class Error < StandardError; end
 
+  # Validate required environment variables
+  REQUIRED_ENV_VARS = {
+    "DISCORD_BOT_TOKEN" => "Discord bot token for sending messages",
+    "DISCORD_CHANNEL_ID" => "Discord channel ID where messages will be sent"
+  }.freeze
+
+  CREATED_FILES = []
+
+  REDIRECT_URI = "http://127.0.0.1:8080/auth/callback".freeze
+  APPLICATION_NAME = "Discord Calendar Notifier".freeze
+  CREDENTIALS_PATH = "credentials.json".freeze
+  TOKEN_PATH = "token.yaml".freeze
+  SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+
+  DISCORD_BOT_TOKEN = ENV["DISCORD_BOT_TOKEN"]
+  DISCORD_CHANNEL_ID = ENV["DISCORD_CHANNEL_ID"]
+
   require "logger"
 
   # Module-level logger. Configurable via environment variables for CI.
@@ -71,23 +88,6 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
   def self.logger=(val)
     @logger = val
   end
-
-  # Validate required environment variables
-  REQUIRED_ENV_VARS = {
-    "DISCORD_BOT_TOKEN" => "Discord bot token for sending messages",
-    "DISCORD_CHANNEL_ID" => "Discord channel ID where messages will be sent"
-  }.freeze
-
-  CREATED_FILES = []
-
-  REDIRECT_URI = "http://127.0.0.1:8080/auth/callback".freeze
-  APPLICATION_NAME = "Discord Calendar Notifier".freeze
-  CREDENTIALS_PATH = "credentials.json".freeze
-  TOKEN_PATH = "token.yaml".freeze
-  SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
-
-  DISCORD_BOT_TOKEN = ENV["DISCORD_BOT_TOKEN"]
-  DISCORD_CHANNEL_ID = ENV["DISCORD_CHANNEL_ID"]
 
   def self.validate_env!
     missing = REQUIRED_ENV_VARS.select { |k, _| ENV[k].nil? || ENV[k].empty? }

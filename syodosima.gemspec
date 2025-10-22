@@ -38,7 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "dotenv"
   spec.add_dependency "google-apis-calendar_v3"
   spec.add_dependency "pstore"
-  spec.add_dependency "webrick", ">= 1.7.0"
+  spec.add_dependency "webrick", ">= 1.8.2"
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "rake"

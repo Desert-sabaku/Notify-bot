@@ -1,11 +1,5 @@
 require_relative "test_helper"
-
-class FakePStoreError < StandardError
-  # purposely name the class like PStore::Error for detection
-  def self.name
-    "PStore::Error"
-  end
-end
+require "pstore"
 
 class TestOauthPStoreHandling < Minitest::Test
   include TestHelper
@@ -29,10 +23,10 @@ class TestOauthPStoreHandling < Minitest::Test
     # Create a dummy token file to simulate a corrupted store
     File.write(@token_path, "corrupted")
 
-    # Mock authorizer to raise a PStore-like error on first get_credentials call
+    # Mock authorizer to raise a real PStore::Error on first get_credentials call
     mock_authorizer = Object.new
     def mock_authorizer.get_credentials(_user_id)
-      raise FakePStoreError, "PStore file seems to be corrupted."
+      raise PStore::Error, "PStore file seems to be corrupted."
     end
 
     Google::Auth::ClientId.stub :from_file, Object.new do
@@ -67,7 +61,7 @@ class TestOauthPStoreHandling < Minitest::Test
 
     mock_authorizer = Object.new
     def mock_authorizer.get_credentials(_user_id)
-      raise FakePStoreError, "PStore file seems to be corrupted."
+      raise PStore::Error, "PStore file seems to be corrupted."
     end
 
     Google::Auth::ClientId.stub :from_file, Object.new do
@@ -77,6 +71,7 @@ class TestOauthPStoreHandling < Minitest::Test
           File.stub :delete, ->(path) { deleted << path } do
             err = assert_raises(StandardError) { Syodosima.authorize }
             assert_match(/CI 上では対話認証ができません/, err.message)
+            assert_equal Syodosima::Messages::AUTH_FAILED_CI, err.message
             assert_equal [], deleted
           end
         end

@@ -17,12 +17,10 @@ module Syodosima
       # Avoid requiring the pstore library; detect by class name instead.
       raise unless e.instance_of?(::PStore::Error)
 
-      logger.warn("Detected corrupted token store (#{TOKEN_PATH}): #{e.class}: #{e.message}")
+      logger.warn(Messages.corrupted_token_log(TOKEN_PATH, e.class, e.message))
 
       # In CI, do not attempt deletion or interactive auth; surface a clear error.
-      if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-        raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
-      end
+      raise Messages::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
       if File.exist?(TOKEN_PATH)
         begin
@@ -30,15 +28,15 @@ module Syodosima
           backup = "#{TOKEN_PATH}.#{ts}.bak"
           begin
             File.rename(TOKEN_PATH, backup)
-            logger.warn("Backed up corrupted token file to: #{backup}")
+            logger.warn("#{Messages::BACKUP_CREATED} #{backup}")
           rescue StandardError
             require "fileutils"
             FileUtils.cp(TOKEN_PATH, backup)
-            logger.warn("Copied corrupted token file to backup: #{backup}")
+            logger.warn("#{Messages::BACKUP_COPIED} #{backup}")
             File.delete(TOKEN_PATH)
           end
         rescue StandardError => delete_err
-          logger.warn("Failed to backup/delete corrupted token file #{TOKEN_PATH}: #{delete_err.message}")
+          logger.warn(Messages.backup_failed_log(TOKEN_PATH, delete_err.message))
         end
       end
 
@@ -58,13 +56,9 @@ module Syodosima
 
   # Extracted interactive auth flow to reduce method complexity
   def self.interactive_auth_flow(authorizer, user_id)
-    if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-      raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
-    end
+    raise Messages::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
-    unless authorizer.respond_to?(:get_authorization_url)
-      raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
-    end
+    raise Messages::AUTH_FAILED_NO_METHOD unless authorizer.respond_to?(:get_authorization_url)
 
     port = oauth_port
     redirect_uri = redirect_uri_for_port(port)
@@ -72,16 +66,16 @@ module Syodosima
     server, code_container, server_thread = start_oauth_server(port)
 
     auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
-    logger.info("ブラウザで認証してください：")
+    logger.info(Messages::BROWSER_AUTH_PROMPT)
     logger.info(auth_url)
-    logger.info("このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）")
+    logger.info(Messages.oauth_callback_info(port))
 
     open_auth_url(auth_url)
 
     server_thread.join
 
     code = code_container[:code]
-    raise "認可コードが取得できませんでした。ブラウザでアクセスした際にこのプロセスが起動しているか確認してください。" if code.nil? || code.to_s.strip.empty?
+    raise Messages::AUTH_CODE_NOT_RECEIVED if code.nil? || code.to_s.strip.empty?
 
     begin
       credentials = authorizer.get_and_store_credentials_from_code(
@@ -90,7 +84,7 @@ module Syodosima
         base_url: redirect_uri
       )
     rescue StandardError => e
-      raise "Google認証に失敗しました（コード交換エラー）: #{e.message}"
+      raise Messages.auth_code_exchange_error(e.message)
     ensure
       # ensure server is shutdown if still running
       server.shutdown if server && server.status != :Stop
@@ -143,7 +137,7 @@ module Syodosima
     proc do |req, res|
       q = URI.decode_www_form(req.query_string || "").to_h
       code_container[:code] = q["code"] || req.query["code"]
-      res.body = "<html><body><h1>認証成功！このウィンドウを閉じてください。</h1></body></html>"
+      res.body = Messages::AUTH_SUCCESS_HTML
       res.content_type = "text/html; charset=utf-8"
       Thread.new { server.shutdown }
     end
@@ -161,7 +155,7 @@ module Syodosima
       system("cmd", "/c", "start", "", auth_url)
     end
   rescue StandardError
-    logger.warn("ブラウザを自動で開けませんでした。URLを手動で開いてください：")
+    logger.warn(Messages::BROWSER_AUTO_OPEN_FAILED)
     logger.warn(auth_url)
   end
 end

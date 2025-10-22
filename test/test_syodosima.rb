@@ -102,7 +102,7 @@ class TestSyodosima < Minitest::Test
           mock_authorizer
         } do
           error = assert_raises(RuntimeError) { Syodosima.authorize }
-          expected_message = "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
+          expected_message = Syodosima::Messages::AUTH_FAILED_NO_METHOD
           assert_equal expected_message, error.message
         end
       end

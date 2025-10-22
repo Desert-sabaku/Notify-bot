@@ -144,7 +144,7 @@ jobs:
 
 Example of messages sent by the bot:
 
-```
+```text
 おはようございます！
 今日の予定をお知らせします。
 

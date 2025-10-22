@@ -96,13 +96,13 @@ module Syodosima
     # @param [String] error_message the error message
     # @return [String] formatted Discord failed send message
     def self.discord_failed_send(error_message)
-      DISCORD_FAILED_SEND_FORMAT % error_message
+      format(DISCORD_FAILED_SEND_FORMAT, error_message)
     end
 
     # @param [String] error_message the error message
     # @return [String] formatted Discord failed send message
     def self.discord_failed_send_message(error_message)
-      DISCORD_FAILED_SEND_MESSAGE_FORMAT % error_message
+      format(DISCORD_FAILED_SEND_MESSAGE_FORMAT, error_message)
     end
 
     # @param [String] formatted_time the formatted time string
@@ -115,7 +115,7 @@ module Syodosima
     # @param [String] summary the event summary
     # @return [String] formatted all-day event message
     def self.event_all_day_format(summary)
-      EVENT_ALL_DAY_FORMAT_TEMPLATE % summary
+      format(EVENT_ALL_DAY_FORMAT_TEMPLATE, summary)
     end
 
     # @param [String] timestamp the timestamp
@@ -139,7 +139,7 @@ module Syodosima
     # @param [String] error_message the error message
     # @return [String] formatted WEBrick error message
     def self.webrick_error(error_message)
-      WEBRICK_ERROR_FORMAT % error_message
+      format(WEBRICK_ERROR_FORMAT, error_message)
     end
   end
 end

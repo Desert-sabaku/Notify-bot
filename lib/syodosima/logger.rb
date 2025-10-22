@@ -44,7 +44,7 @@ module Syodosima
   if format == "json"
     require "json"
     @logger.formatter = proc do |severity, datetime, _progname, msg|
-      MessageConstants.json_log_format(datetime.iso8601, Syodosima::APPLICATION_NAME, severity, msg)
+      "#{MessageConstants.json_log_format(datetime.iso8601, Syodosima::APPLICATION_NAME, severity, msg)}\n"
     end
   else
     @logger.formatter = proc do |severity, datetime, _progname, msg|

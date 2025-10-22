@@ -22,8 +22,8 @@ This application uses the following Ruby gems:
 
 #### Required Dependencies
 
--   `discordrb` - Library for operating Discord API
--   `google-apis-calendar_v3` - Library for operating Google Calendar API
+-   `discordrb` - Library for operating the Discord API
+-   `google-apis-calendar_v3` - Library for operating the Google Calendar API
 -   `dotenv` - Library for managing environment variables
 
 #### Development Dependencies
@@ -48,7 +48,7 @@ bundle install
 
 ## Usage
 
-Syodosima automatically retrieves today's appointments from Google Calendar and sends notifications to Discord channels.
+Syodosima automatically retrieves today's appointments from Google Calendar and sends notifications to a Discord channel.
 
 ### Features
 
@@ -57,7 +57,7 @@ Syodosima automatically retrieves today's appointments from Google Calendar and 
 -   Send notifications to Discord channels
 -   Support for automatic execution in GitHub Actions
 
-### Setup
+### Configuration
 
 #### Google Calendar API Setup
 
@@ -69,16 +69,16 @@ Syodosima automatically retrieves today's appointments from Google Calendar and 
 #### Discord Bot Setup
 
 1. Create a new application in [Discord Developer Portal](https://discord.com/developers/applications)
-2. Create a bot and get the token
-3. Invite the bot to your server and get the channel ID
+2. Create a bot and obtain the token
+3. Invite the bot to the server and obtain the channel ID
 
-### Environment Variables
+### Environment Variable Setup
 
-Set the following environment variables:
+Please set the following environment variables:
 
 #### For Local Execution
 
-Create a `.env` file with the following content:
+Create a `.env` file and describe the following:
 
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
@@ -92,7 +92,7 @@ GOOGLE_TOKEN_YAML=credentials_yaml_content_here  # contents of token.yaml
 Set the following secrets in GitHub repository Settings > Secrets and variables > Actions:
 
 -   `DISCORD_BOT_TOKEN`: Discord Bot token
--   `DISCORD_CHANNEL_ID`: Discord channel ID to send notifications
+-   `DISCORD_CHANNEL_ID`: Discord channel ID to send notifications to
 -   `GOOGLE_CREDENTIALS_JSON`: Contents of credentials.json file
 -   `GOOGLE_TOKEN_YAML`: Contents of token.yaml file
 
@@ -100,7 +100,7 @@ Set the following secrets in GitHub repository Settings > Secrets and variables 
 
 #### Local Execution
 
-1. For first run, Google authentication is required:
+1. For the first run, Google authentication is required:
 
 ```bash
 bundle exec rake run:once
@@ -109,7 +109,7 @@ bundle exec rake run:once
 2. Perform Google authentication in the browser and enter the displayed code in the console
 3. Authentication information will be saved in `token.yaml`
 
-#### Automatic Execution with GitHub Actions
+#### Automatic Execution in GitHub Actions
 
 Create a GitHub Actions workflow file (e.g., `.github/workflows/notify.yml`):
 
@@ -118,7 +118,7 @@ name: Daily Calendar Notification
 
 on:
     schedule:
-        - cron: "0 0 * * *" # Run daily at 0:00 UTC
+        - cron: "0 0 * * *" # Run daily at 0:00 (UTC)
     workflow_dispatch: # Manual execution also possible
 
 jobs:
@@ -145,19 +145,19 @@ jobs:
 Example of messages sent by the bot:
 
 ```text
-おはようございます！
-今日の予定をお知らせします。
+Good morning!
+I'll let you know today's schedule.
 
-【09:00〜10:00】 チームミーティング
-【13:00〜14:00】 プロジェクトレビュー
-【終日】 休日
+【09:00〜10:00】 Team Meeting
+【13:00〜14:00】 Project Review
+【All Day】 Holiday
 ```
 
 ### Notes
 
--   Google authentication is required for first run
+-   Google authentication is required for the first run
 -   Timezone follows system settings
--   Only retrieves appointments from Google Calendar's primary calendar
+-   Only appointments from the primary calendar in Google Calendar are retrieved
 
 ## Development
 

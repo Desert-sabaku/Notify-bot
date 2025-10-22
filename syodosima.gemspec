@@ -34,7 +34,16 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
+  spec.add_dependency "discordrb", ">= 3.5.0"
+  spec.add_dependency "dotenv", ">= 3.1.8"
+  spec.add_dependency "google-apis-calendar_v3", ">= 0.53.0"
+  spec.add_dependency "pstore", ">= 0.2.0"
+  spec.add_dependency "webrick", ">= 1.9.1"
+  spec.add_development_dependency "bundler", ">= 2.7.2"
+  spec.add_development_dependency "minitest", ">= 5.26.0"
+  spec.add_development_dependency "rake", ">= 13.3.0"
+  spec.add_development_dependency "rubocop", ">= 1.81.1"
+  spec.add_development_dependency "solargraph", ">= 0.57.0"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

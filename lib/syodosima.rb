@@ -136,7 +136,7 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
     return credentials unless credentials.nil?
 
     if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-      raise "Google認証が必要ですが、CI では対話認証できません。token.yaml を Secret(GOOGLE_TOKEN_YAML) として設定してください。"
+      raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
     end
 
     unless authorizer.respond_to?(:get_authorization_url)

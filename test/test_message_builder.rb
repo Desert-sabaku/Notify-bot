@@ -14,9 +14,9 @@ class TestMessageHelpers < Minitest::Test
     event = create_mock_event("会議", start_time, end_time)
 
     result = Syodosima.build_message([event])
-    expected = Syodosima::MessageConstants::MESSAGE_WITH_EVENTS_PREFIX + Syodosima::MessageConstants.event_time_format(
-      "09:00〜10:00", "会議"
-    )
+    expected = Syodosima::MessageConstants::MESSAGE_WITH_EVENTS_PREFIX +
+               Syodosima::MessageConstants.event_time_format("09:00〜10:00", "会議")
+
     assert_equal expected, result
   end
 

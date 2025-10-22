@@ -8,7 +8,7 @@ module Syodosima
   DISCORD_BOT_TOKEN: String?
   DISCORD_CHANNEL_ID: String?
   REQUIRED_ENV_VARS: Hash[String, String]
-  @created_files: Array[String]
+  @created_files: Array[String]?
 
   def self.created_files: -> Array[String]
   def self.validate_env!: -> void

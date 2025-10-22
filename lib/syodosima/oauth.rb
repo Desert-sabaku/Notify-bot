@@ -10,7 +10,7 @@ module Syodosima
   # Perform OAuth authorization and return credentials
   #
   # @return [Google::Auth::UserRefreshCredentials] the OAuth credentials
-  # @raise [String] if authorization fails in CI or other environments
+  # @raise [MessageConstants::AUTH_FAILED_CI] if authorization fails in CI or other environments
   def self.authorize
     client_id, token_store = client_id_and_token_store
     authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
@@ -68,7 +68,7 @@ module Syodosima
   # @param [Google::Auth::UserAuthorizer] authorizer the OAuth authorizer
   # @param [String] user_id the user ID
   # @return [Google::Auth::UserRefreshCredentials] the OAuth credentials
-  # @raise [String] if authorization fails
+  # @raise [RuntimeError] if authorization fails
   def self.interactive_auth_flow(authorizer, user_id)
     raise MessageConstants::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 

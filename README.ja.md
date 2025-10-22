@@ -1,6 +1,6 @@
 # Syodosima
 
-Syodosima gem は、指定された Google Calendar の予定を Discord に通知するツールです。
+Syodosima gem は、指定された Google Calendar の予定を Discord に通知するツールおよびその CLI ラッパーです。
 
 ## インストール
 
@@ -16,22 +16,7 @@ Bundler を使用して依存関係を管理していない場合は、以下の
 gem install syodosima
 ```
 
-### 依存関係
-
-このアプリケーションは以下の Ruby gem を使用しています：
-
-#### 必須依存関係
-
-- `discordrb` - Discord API を操作するためのライブラリ
-- `google-apis-calendar_v3` - Google Calendar API を操作するためのライブラリ
-- `dotenv` - 環境変数を管理するためのライブラリ
-
-#### 開発用依存関係
-
-- `rubocop` - Ruby コードのスタイルチェック
-- `solargraph` - Ruby の言語サーバー
-
-### ソースからの手動インストール
+手動でインストールする場合は、以下の手順に従ってください。
 
 1. リポジトリをクローンします：
 
@@ -100,14 +85,29 @@ GitHub リポジトリの Settings > Secrets and variables > Actions で以下�
 
 #### ローカル実行
 
-1. 初回実行時は Google 認証が必要です：
+1. 初回実行時は Google 認証が必要です。まず`irb`を起動し：
+
+```bash
+irb(main):001> require "syodosima"
+=> true
+irb(main):002> Syodosima.run
+```
+
+2. ブラウザで Google 認証を行い、表示されたコードをコンソールに入力
+3. 認証情報が `token.yaml` に保存されます
+
+> [!important]
+> カレントディレクトリに`.env`ファイルはありますか？
+> これがなければ`syodosima`は動作できません！
+
+なお、手動でインストールした場合には、`irb`ではなく`rake`タスクを使用してください。
 
 ```bash
 bundle exec rake run:once
 ```
 
-2. ブラウザで Google 認証を行い、表示されたコードをコンソールに入力
-3. 認証情報が `token.yaml` に保存されます
+> [!NOTE]
+> この`rake`タスクは内部的に`Syodosima.run`を呼び出しています。
 
 #### GitHub Actions での自動実行
 
@@ -172,7 +172,3 @@ Bot が送信するメッセージの例：
 ## ライセンス
 
 この gem は、[MIT License](https://opensource.org/licenses/MIT) の条件の下でオープンソースとして利用可能です。
-
-## 行動規範
-
-Syodosima プロジェクトのコードベース、issue トラッカー、チャットルーム、メーリングリストでやり取りするすべての人々は、[行動規範](https://github.com/[USERNAME]/syodosima/blob/gem/CODE_OF_CONDUCT.md) を遵守することが期待されます。

@@ -1,6 +1,6 @@
 # Syodosima
 
-Syodosima gem is a tool to notify Discord of appointments on a given Google Calendar.
+Syodosima gem is a tool to notify Discord of appointments on a given Google Calendar and its CLI wrapper.
 
 ## Installation
 
@@ -16,22 +16,7 @@ If bundler is not being used to manage dependencies, install the gem by executin
 gem install syodosima
 ```
 
-### Dependencies
-
-This application uses the following Ruby gems:
-
-#### Required Dependencies
-
--   `discordrb` - Library for operating the Discord API
--   `google-apis-calendar_v3` - Library for operating the Google Calendar API
--   `dotenv` - Library for managing environment variables
-
-#### Development Dependencies
-
--   `rubocop` - Ruby code style checker
--   `solargraph` - Ruby language server
-
-### Manual Installation from Source
+For manual installation, follow these steps.
 
 1. Clone the repository:
 
@@ -100,14 +85,29 @@ Set the following secrets in GitHub repository Settings > Secrets and variables 
 
 #### Local Execution
 
-1. For the first run, Google authentication is required:
+1. For the first run, Google authentication is required. First, launch `irb`:
+
+```bash
+irb(main):001> require "syodosima"
+=> true
+irb(main):002> Syodosima.run
+```
+
+2. Perform Google authentication in the browser and enter the displayed code in the console
+3. Authentication information will be saved in `token.yaml`
+
+> [!important]
+> Do you have a `.env` file in the current directory?
+> Without this, `syodosima` will not work!
+
+For manual installation, use the `rake` task instead of `irb`.
 
 ```bash
 bundle exec rake run:once
 ```
 
-2. Perform Google authentication in the browser and enter the displayed code in the console
-3. Authentication information will be saved in `token.yaml`
+> [!NOTE]
+> This `rake` task internally calls `Syodosima.run`.
 
 #### Automatic Execution in GitHub Actions
 
@@ -172,7 +172,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/desert
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Syodosima project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/syodosima/blob/gem/CODE_OF_CONDUCT.md).

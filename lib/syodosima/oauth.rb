@@ -40,8 +40,8 @@ module Syodosima
         end
       end
 
-      # recreate the token store and authorizer and try again
-      _client_id, token_store = client_id_and_token_store
+      # Recreate client_id, token store, and authorizer, then retry once
+      client_id, token_store = client_id_and_token_store
       authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
       credentials = authorizer.get_credentials(user_id)
 

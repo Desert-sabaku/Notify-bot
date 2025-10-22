@@ -15,6 +15,20 @@ require "uri"
 module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
   class Error < StandardError; end
 
+  require "logger"
+
+  # Module-level logger. Default to STDOUT, but can be overridden in tests.
+  @logger = Logger.new($stdout)
+  @logger.level = Logger::INFO
+
+  def self.logger
+    @logger
+  end
+
+  def self.logger=(val)
+    @logger = val
+  end
+
   # Validate required environment variables
   REQUIRED_ENV_VARS = {
     "DISCORD_BOT_TOKEN" => "Discord bot token for sending messages",
@@ -65,7 +79,7 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
       CREATED_FILES.each do |file|
         File.delete(file) if File.exist?(file)
       rescue StandardError => e
-        warn "Warning: Failed to cleanup #{file}: #{e.message}"
+        logger.warn("Warning: Failed to cleanup #{file}: #{e.message}")
       end
     end
   end
@@ -92,9 +106,9 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
     server, code_container, server_thread = start_oauth_server(port)
 
     auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
-    puts "ブラウザで認証してください："
-    puts auth_url
-    puts "このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）"
+    logger.info("ブラウザで認証してください：")
+    logger.info(auth_url)
+    logger.info("このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）")
 
     open_auth_url(auth_url)
 
@@ -163,8 +177,8 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
       system("cmd", "/c", "start", "", auth_url)
     end
   rescue StandardError
-    puts "ブラウザを自動で開けませんでした。URLを手動で開いてください："
-    puts auth_url
+    logger.warn("ブラウザを自動で開けませんでした。URLを手動で開いてください：")
+    logger.warn(auth_url)
   end
 
   def self.fetch_today_events
@@ -206,7 +220,7 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
     validate_env!
     write_credential_files!
 
-    puts "今日の予定を取得しています..."
+    logger.info("今日の予定を取得しています...")
     events = fetch_today_events
 
     if events.empty?
@@ -225,8 +239,8 @@ module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
       end
     end
 
-    puts "Discordに通知を送信します..."
+    logger.info("Discordに通知を送信します...")
     send_discord_message(message)
-    puts "完了しました！"
+    logger.info("完了しました！")
   end
 end

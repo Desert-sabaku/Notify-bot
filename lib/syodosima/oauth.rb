@@ -23,7 +23,9 @@ module Syodosima
       raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
     end
 
-    raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください." unless authorizer.respond_to?(:get_authorization_url)
+    unless authorizer.respond_to?(:get_authorization_url)
+      raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
+    end
 
     port = oauth_port
     redirect_uri = redirect_uri_for_port(port)

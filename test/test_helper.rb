@@ -6,6 +6,43 @@ require "minitest/mock"
 require "dotenv"
 require "date"
 
+class BotSpy
+  attr_reader :sent_messages, :run_argument
+
+  def initialize
+    @sent_messages = []
+  end
+
+  def ready(&block)
+    @ready_block = block
+  end
+
+  def run(async)
+    @run_argument = async
+    @ready_block&.call(nil)
+  end
+
+  def send_message(channel, message)
+    @sent_messages << [channel, message]
+  end
+
+  def stop
+    @stopped = true
+  end
+
+  def join
+    @joined = true
+  end
+
+  def stopped?
+    !!@stopped
+  end
+
+  def joined?
+    !!@joined
+  end
+end
+
 module TestHelper
   EventTime = Struct.new(:date_time, :date)
   Event = Struct.new(:start, :end, :summary)
@@ -83,7 +120,12 @@ module TestHelper
   #   mock = mock_authorizer_with_credentials(captured, mock_credentials)
   #
   #   # with extra method that returns a fixed value
-  #   mock = mock_authorizer_with_credentials(captured, nil, extra_methods: { get_and_store_credentials_from_code: mock_credentials })
+  #   mock = mock_authorizer_with_credentials(captured,
+  #                                           nil,
+  #                                           extra_methods: {
+  #                                             get_and_store_credentials_from_code: mock_credentials
+  #                                           }
+  #   )
   #
   #   # with extra method implemented as a proc
   #   mock = mock_authorizer_with_credentials(captured, nil, extra_methods: { foo: ->(a, b) { a + b } })

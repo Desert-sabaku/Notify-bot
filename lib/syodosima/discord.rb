@@ -4,6 +4,11 @@
 # and deliver a single message. Extracted to keep the core module
 # focused on orchestration.
 module Syodosima
+  # Send a message to Discord channel
+  #
+  # @param [String] message the message to send
+  # @return [void]
+  # @raise [ArgumentError] if message is nil or empty
   def self.send_discord_message(message)
     raise ArgumentError, "Message cannot be nil or empty" if message.nil? || message.empty?
 
@@ -14,11 +19,20 @@ module Syodosima
   end
 
   # Create a Discord bot instance (extracted for testability)
+  #
+  # @param [String] token the Discord bot token
+  # @return [Discordrb::Bot] the bot instance
   def self.create_discord_bot(token)
     Discordrb::Bot.new(token: token)
   end
 
   # Deliver message using a bot instance and manage its lifecycle
+  #
+  # @param [Discordrb::Bot] bot the bot instance
+  # @param [String] channel the channel ID to send to
+  # @param [String] message the message to send
+  # @return [void]
+  # @raise [RuntimeError] if message delivery fails
   def self.deliver_message_with_bot(bot, channel, message)
     error_occurred = false
 

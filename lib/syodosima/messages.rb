@@ -27,18 +27,30 @@ module Syodosima
     BACKUP_FAILED = "Failed to backup/delete corrupted token file".freeze
 
     # Helper methods for formatted messages
+    #
+    # @param [Integer] port the port number for OAuth callback
+    # @return [String] formatted callback info message
     def self.oauth_callback_info(port)
       "このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）"
     end
 
+    # @param [String] token_path path to the token file
+    # @param [Class] error_class the error class
+    # @param [String] error_message the error message
+    # @return [String] formatted corrupted token log message
     def self.corrupted_token_log(token_path, error_class, error_message)
       "#{CORRUPTED_TOKEN_DETECTED} (#{token_path}): #{error_class}: #{error_message}"
     end
 
+    # @param [String] message the error message
+    # @return [String] formatted auth code exchange error message
     def self.auth_code_exchange_error(message)
       "#{AUTH_CODE_EXCHANGE_FAILED}: #{message}"
     end
 
+    # @param [String] token_path path to the token file
+    # @param [String] error_message the error message
+    # @return [String] formatted backup failed log message
     def self.backup_failed_log(token_path, error_message)
       "#{BACKUP_FAILED} #{token_path}: #{error_message}"
     end

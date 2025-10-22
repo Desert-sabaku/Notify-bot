@@ -144,7 +144,7 @@ module Syodosima
     server_thread = Thread.new do
       server.start
     rescue StandardError => e
-      warn MessageConstants.webrick_error(e.message)
+      logger.warn(MessageConstants.webrick_error(e.message))
     end
 
     [server, code_container, server_thread]
@@ -180,10 +180,10 @@ module Syodosima
   def self.open_auth_url(auth_url)
     host_os = RbConfig::CONFIG["host_os"]
     case host_os
-    when /linux|bsd/
-      system("xdg-open", auth_url)
     when /darwin/
       system("open", auth_url)
+    when /linux|bsd/
+      system("xdg-open", auth_url)
     when /mswin|mingw|cygwin/
       system("cmd", "/c", "start", "", auth_url)
     end

@@ -129,7 +129,7 @@ module Syodosima
 
   # Create WEBrick server with minimal logging (extracted for clarity)
   def self.create_webrick_server(port)
-    WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new(File::NULL), AccessLog: [])
+    WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new(IO::NULL), AccessLog: [])
   end
 
   # Return a proc that handles oauth callback requests and stores the code

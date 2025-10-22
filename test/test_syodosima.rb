@@ -110,9 +110,9 @@ class TestSyodosima < Minitest::Test
       end
     end
 
-  assert_equal Syodosima::CREDENTIALS_PATH, captured_path
-  assert_equal Syodosima::TOKEN_PATH, captured_token_path
-  assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
+    assert_equal Syodosima::CREDENTIALS_PATH, captured_path
+    assert_equal Syodosima::TOKEN_PATH, captured_token_path
+    assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   end
 
@@ -146,9 +146,9 @@ class TestSyodosima < Minitest::Test
       end
     end
 
-  assert_equal Syodosima::CREDENTIALS_PATH, captured_path
-  assert_equal Syodosima::TOKEN_PATH, captured_token_path
-  assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
+    assert_equal Syodosima::CREDENTIALS_PATH, captured_path
+    assert_equal Syodosima::TOKEN_PATH, captured_token_path
+    assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   end
 
@@ -163,7 +163,7 @@ class TestSyodosima < Minitest::Test
 
         assert_equal events, result
         assert_equal credentials, service.authorization
-  assert_equal Syodosima::APPLICATION_NAME, service.client_options.application_name
+        assert_equal Syodosima::APPLICATION_NAME, service.client_options.application_name
 
         calendar_id, params = service.list_args
         assert_equal "primary", calendar_id
@@ -190,7 +190,7 @@ class TestSyodosima < Minitest::Test
   end
 
   def test_main_with_no_events
-  result = run_main_and_capture_message([])
+    result = run_main_and_capture_message([])
 
     assert_equal @channel_id, result[:channel]
     assert_equal "おはようございます！\n今日の予定はありません。", result[:message]
@@ -203,7 +203,7 @@ class TestSyodosima < Minitest::Test
     end_time = DateTime.new(2025, 10, 19, 10, 0, 0, "+09:00")
     events = [create_mock_event("会議", start_time, end_time)]
 
-  result = run_main_and_capture_message(events)
+    result = run_main_and_capture_message(events)
     message = result[:message]
     expected = "おはようございます！\n今日の予定をお知らせします。\n\n【09:00〜10:00】 会議\n"
     assert_equal expected, message
@@ -213,7 +213,7 @@ class TestSyodosima < Minitest::Test
   def test_main_with_all_day_event
     events = [create_mock_event("休日")]
 
-  result = run_main_and_capture_message(events)
+    result = run_main_and_capture_message(events)
     message = result[:message]
     expected = "おはようございます！\n今日の予定をお知らせします。\n\n【終日】 休日\n"
     assert_equal expected, message

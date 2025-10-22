@@ -6,7 +6,7 @@ PATH
       dotenv
       google-apis-calendar_v3
       pstore
-      webrick (>= 1.7.0)
+      webrick (>= 1.8.2)
 
 GEM
   remote: https://rubygems.org/

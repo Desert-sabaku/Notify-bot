@@ -24,8 +24,9 @@ module Syodosima
   }.freeze
 
   # Track files created at runtime so CI cleanup can remove them.
+  #
   # @return [Array<String>] list of created file paths
   def self.created_files
-    @created_files
+    @created_files ||= []
   end
 end

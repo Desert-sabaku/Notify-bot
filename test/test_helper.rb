@@ -170,4 +170,10 @@ module TestHelper
     end_time = EventTime.new(end_date_time, nil)
     Event.new(start_time, end_time, summary)
   end
+
+  # Helper to reset a constant to a new value
+  def reset_constant(mod, name, value)
+    mod.send(:remove_const, name) if mod.const_defined?(name)
+    mod.const_set(name, value)
+  end
 end

@@ -15,12 +15,13 @@ namespace :run do
     require "dotenv/load"
     require_relative "lib/syodosima"
 
-    puts "Running Syodosima.run..."
     Syodosima.run
   end
 
   desc "Print environment variables used by the notifier"
   task :env do
+    require "dotenv/load"
+
     keys = %w[
       DISCORD_BOT_TOKEN
       DISCORD_CHANNEL_ID

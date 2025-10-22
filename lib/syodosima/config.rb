@@ -24,11 +24,9 @@ module Syodosima
   }.freeze
 
   # Track files created at runtime so CI cleanup can remove them.
-  # This array is intentionally mutable so runtime code can append paths.
-  # Use a class instance variable and accessor to avoid mutable constants.
   @created_files = []
 
   def self.created_files
-    @created_files ||= []
+    @created_files
   end
 end

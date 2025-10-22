@@ -28,8 +28,8 @@ class TestSyodosima < Minitest::Test
     setup_env_vars
     @bot_token = ENV["DISCORD_BOT_TOKEN"]
     @channel_id = ENV["DISCORD_CHANNEL_ID"]
-    reset_constant(:DISCORD_BOT_TOKEN, @bot_token)
-    reset_constant(:DISCORD_CHANNEL_ID, @channel_id)
+    reset_constant(Syodosima, :DISCORD_BOT_TOKEN, @bot_token)
+    reset_constant(Syodosima, :DISCORD_CHANNEL_ID, @channel_id)
   end
 
   def teardown
@@ -233,10 +233,5 @@ class TestSyodosima < Minitest::Test
       channel: last_message&.first,
       bot: bot_spy
     }
-  end
-
-  def reset_constant(name, value)
-    Syodosima.send(:remove_const, name) if Syodosima.const_defined?(name)
-    Syodosima.const_set(name, value)
   end
 end

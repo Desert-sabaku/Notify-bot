@@ -56,7 +56,7 @@ module Syodosima
       CREATED_FILES.each do |file|
         File.delete(file) if File.exist?(file)
       rescue StandardError => e
-        @logger.warn("Warning: Failed to cleanup #{file}: #{e.message}")
+        Syodosima.logger.warn("Warning: Failed to cleanup #{file}: #{e.message}")
       end
     end
   end

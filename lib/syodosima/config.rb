@@ -1,9 +1,6 @@
 # Configuration constants for Syodosima.
 #
 # Extracted into a separate file to keep `lib/syodosima.rb` concise and
-# Configuration constants for Syodosima.
-#
-# Extracted into a separate file to keep `lib/syodosima.rb` concise and
 # to make configuration easier to test and override.
 module Syodosima
   APPLICATION_NAME = "Discord Calendar Notifier".freeze

@@ -1,16 +1,15 @@
 source "https://rubygems.org"
 
-gem "discordrb"         # Discord APIを操作するためのGem
-gem "dotenv"            # 環境変数を管理するためのGem（トークンなどを安全に扱う）
-gem "google-api-client" # Google Calendar APIを操作するためのGem
-
-group :development do
-  gem "rubocop"
-  gem "solargraph"
-end
-
+gem "discordrb"
+gem "dotenv"
+gem "google-api-client"
+gem "pstore", "~> 0.2.0"
+gem "rake", "~> 13.3"
 gem "webrick", "~> 1.9"
 
-gem "rake", "~> 13.3"
-
-gem "pstore", "~> 0.2.0"
+group :development do
+  gem "rbs"
+  gem "rubocop"
+  gem "solargraph"
+  gem "steep"
+end

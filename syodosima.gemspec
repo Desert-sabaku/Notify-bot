@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   # Uncomment to register a new dependency of your gem
   spec.add_dependency "discordrb", ">= 3.5.0"
   spec.add_dependency "dotenv", ">= 3.1.8"
-  spec.add_dependency "google-apis-calendar_v3"
+  spec.add_dependency "google-apis-calendar_v3", ">= 0.53.0"
   spec.add_dependency "pstore", ">= 0.2.0"
   spec.add_dependency "webrick", ">= 1.9.1"
   spec.add_development_dependency "bundler", ">= 2.7.2"

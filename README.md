@@ -23,7 +23,7 @@ This application uses the following Ruby gems:
 #### Required Dependencies
 
 -   `discordrb` - Library for operating Discord API
--   `google-api-client` - Library for operating Google Calendar API
+-   `google-apis-calendar_v3` - Library for operating Google Calendar API
 -   `dotenv` - Library for managing environment variables
 
 #### Development Dependencies

@@ -12,3 +12,5 @@ end
 gem "webrick", "~> 1.9"
 
 gem "rake", "~> 13.3"
+
+gem "pstore", "~> 0.2.0"

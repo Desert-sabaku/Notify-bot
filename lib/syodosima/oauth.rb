@@ -9,7 +9,46 @@ module Syodosima
     client_id, token_store = client_id_and_token_store
     authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
     user_id = "default"
-    credentials = authorizer.get_credentials(user_id)
+
+    begin
+      credentials = authorizer.get_credentials(user_id)
+    rescue StandardError => e
+      # Some environments may raise a PStore::Error when the token file is corrupted.
+      # Avoid requiring the pstore library; detect by class name instead.
+      raise unless e.instance_of?(::PStore::Error)
+
+      logger.warn("Detected corrupted token store (#{TOKEN_PATH}): #{e.class}: #{e.message}")
+
+      # In CI, do not attempt deletion or interactive auth; surface a clear error.
+      if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+        raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
+      end
+
+      if File.exist?(TOKEN_PATH)
+        begin
+          ts = Time.now.utc.strftime("%Y%m%d%H%M%S")
+          backup = "#{TOKEN_PATH}.#{ts}.bak"
+          begin
+            File.rename(TOKEN_PATH, backup)
+            logger.warn("Backed up corrupted token file to: #{backup}")
+          rescue StandardError
+            require "fileutils"
+            FileUtils.cp(TOKEN_PATH, backup)
+            logger.warn("Copied corrupted token file to backup: #{backup}")
+            File.delete(TOKEN_PATH)
+          end
+        rescue StandardError => delete_err
+          logger.warn("Failed to backup/delete corrupted token file #{TOKEN_PATH}: #{delete_err.message}")
+        end
+      end
+
+      # recreate the token store and authorizer and try again
+      _client_id, token_store = client_id_and_token_store
+      authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
+      credentials = authorizer.get_credentials(user_id)
+
+      # re-raise non-PStore errors
+    end
 
     return credentials unless credentials.nil?
 
@@ -19,10 +58,12 @@ module Syodosima
 
   # Extracted interactive auth flow to reduce method complexity
   def self.interactive_auth_flow(authorizer, user_id)
-    if ENV["CI"] ||
-       ENV["GITHUB_ACTIONS"] ||
-       !authorizer.respond_to?(:get_authorization_url)
+    if ENV["CI"] || ENV["GITHUB_ACTIONS"]
       raise "Google認証に失敗しました。CI 上では対話認証ができませんので、ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。"
+    end
+
+    unless authorizer.respond_to?(:get_authorization_url)
+      raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
     end
 
     port = oauth_port

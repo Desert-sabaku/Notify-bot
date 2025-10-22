@@ -117,6 +117,7 @@ GEM
       ast (~> 2.4.1)
       racc
     prism (1.5.2)
+    pstore (0.2.0)
     public_suffix (6.0.2)
     racc (1.8.1)
     rainbow (3.1.1)
@@ -209,6 +210,7 @@ DEPENDENCIES
   discordrb
   dotenv
   google-api-client
+  pstore (~> 0.2.0)
   rake (~> 13.3)
   rubocop
   solargraph

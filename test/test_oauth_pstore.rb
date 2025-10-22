@@ -78,7 +78,7 @@ class TestOauthPStoreHandling < Minitest::Test
           File.stub :delete, ->(path) { deleted << path } do
             err = assert_raises(StandardError) { Syodosima.authorize }
             assert_match(/CI 上では対話認証ができません/, err.message)
-            assert_equal Syodosima::Messages::AUTH_FAILED_CI, err.message
+            assert_equal Syodosima::MessageConstants::AUTH_FAILED_CI, err.message
             assert_equal [], deleted
           end
         end

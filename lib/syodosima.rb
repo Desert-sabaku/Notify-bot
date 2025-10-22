@@ -19,10 +19,10 @@ module Syodosima
   # Validate required environment variables and configuration constants
   require_relative "syodosima/config"
   require_relative "syodosima/logger"
-  require_relative "syodosima/messages"
+  require_relative "syodosima/message_constants"
   require_relative "syodosima/oauth"
   require_relative "syodosima/discord"
-  require_relative "syodosima/message"
+  require_relative "syodosima/message_builder"
 
   # Validate required environment variables and configuration constants
   #

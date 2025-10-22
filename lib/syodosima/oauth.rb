@@ -23,10 +23,10 @@ module Syodosima
       # Avoid requiring the pstore library; detect by class name instead.
       raise unless e.is_a?(::PStore::Error)
 
-      logger.warn(Messages.corrupted_token_log(TOKEN_PATH, e.class, e.message))
+      logger.warn(MessageConstants.corrupted_token_log(TOKEN_PATH, e.class, e.message))
 
       # In CI, do not attempt deletion or interactive auth; surface a clear error.
-      raise Messages::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+      raise MessageConstants::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
       handle_corrupted_token
       # Retry once after cleanup
@@ -52,14 +52,14 @@ module Syodosima
       backup = "#{TOKEN_PATH}.#{ts}.bak"
       begin
         File.rename(TOKEN_PATH, backup)
-        logger.warn("#{Messages::BACKUP_CREATED} #{backup}")
+        logger.warn("#{MessageConstants::BACKUP_CREATED} #{backup}")
       rescue StandardError
         FileUtils.cp(TOKEN_PATH, backup)
-        logger.warn("#{Messages::BACKUP_COPIED} #{backup}")
+        logger.warn("#{MessageConstants::BACKUP_COPIED} #{backup}")
         File.delete(TOKEN_PATH)
       end
     rescue StandardError => e
-      logger.warn(Messages.backup_failed_log(TOKEN_PATH, e.message))
+      logger.warn(MessageConstants.backup_failed_log(TOKEN_PATH, e.message))
     end
   end
 
@@ -70,9 +70,9 @@ module Syodosima
   # @return [Google::Auth::UserRefreshCredentials] the OAuth credentials
   # @raise [String] if authorization fails
   def self.interactive_auth_flow(authorizer, user_id)
-    raise Messages::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+    raise MessageConstants::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
-    raise Messages::AUTH_FAILED_NO_METHOD unless authorizer.respond_to?(:get_authorization_url)
+    raise MessageConstants::AUTH_FAILED_NO_METHOD unless authorizer.respond_to?(:get_authorization_url)
 
     port = oauth_port
     redirect_uri = redirect_uri_for_port(port)
@@ -80,16 +80,16 @@ module Syodosima
     _server, code_container, server_thread = start_oauth_server(port)
 
     auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
-    logger.info(Messages::BROWSER_AUTH_PROMPT)
+    logger.info(MessageConstants::BROWSER_AUTH_PROMPT)
     logger.info(auth_url)
-    logger.info(Messages.oauth_callback_info(port))
+    logger.info(MessageConstants.oauth_callback_info(port))
 
     open_auth_url(auth_url)
 
     server_thread.join
 
     code = code_container[:code]
-    raise Messages::AUTH_CODE_NOT_RECEIVED if code.nil? || code.to_s.strip.empty?
+    raise MessageConstants::AUTH_CODE_NOT_RECEIVED if code.nil? || code.to_s.strip.empty?
 
     begin
       credentials = authorizer.get_and_store_credentials_from_code(
@@ -98,7 +98,7 @@ module Syodosima
         base_url: redirect_uri
       )
     rescue StandardError => e
-      raise Messages.auth_code_exchange_error(e.message)
+      raise MessageConstants.auth_code_exchange_error(e.message)
     end
 
     credentials
@@ -167,7 +167,7 @@ module Syodosima
     proc do |req, res|
       q = URI.decode_www_form(req.query_string || "").to_h
       code_container[:code] = q["code"] || req.query["code"]
-      res.body = Messages::AUTH_SUCCESS_HTML
+      res.body = MessageConstants::AUTH_SUCCESS_HTML
       res.content_type = "text/html; charset=utf-8"
       Thread.new { server.shutdown }
     end
@@ -188,7 +188,7 @@ module Syodosima
       system("cmd", "/c", "start", "", auth_url)
     end
   rescue StandardError
-    logger.warn(Messages::BROWSER_AUTO_OPEN_FAILED)
+    logger.warn(MessageConstants::BROWSER_AUTO_OPEN_FAILED)
     logger.warn(auth_url)
   end
 end

@@ -1,4 +1,93 @@
 module Syodosima
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  APPLICATION_NAME: String
+  CREDENTIALS_PATH: String
+  TOKEN_PATH: String
+  SCOPE: Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+  DISCORD_BOT_TOKEN: String?
+  DISCORD_CHANNEL_ID: String?
+  REQUIRED_ENV_VARS: Hash[String, String]
+  @created_files: Array[String]
+
+  def self.created_files: -> Array[String]
+  def self.validate_env!: -> void
+  def self.write_credential_files!: -> void
+  def self.write_env_file: (String env_key, String path) -> void
+  def self.fetch_today_events: -> Array[Google::Apis::CalendarV3::Event]
+  def self.today_time_window: -> [String, String]
+  def self.run: -> void
+
+  # OAuth helpers
+  def self.authorize: -> Google::Auth::UserRefreshCredentials
+  def self.handle_corrupted_token: -> void
+  def self.interactive_auth_flow: (Google::Auth::UserAuthorizer authorizer, String user_id) -> Google::Auth::UserRefreshCredentials
+  def self.oauth_port: -> Integer
+  def self.redirect_uri_for_port: (Integer port) -> String
+  def self.client_id_and_token_store: -> [Google::Auth::ClientId, Google::Auth::Stores::FileTokenStore]
+  def self.start_oauth_server: (Integer port) -> [WEBrick::HTTPServer, Hash[Symbol, untyped], Thread]
+  def self.create_webrick_server: (Integer port) -> WEBrick::HTTPServer
+  def self.oauth_request_handler: (Hash[Symbol, untyped] code_container, WEBrick::HTTPServer server) -> Proc
+  def self.open_auth_url: (String auth_url) -> void
+
+  # Discord helpers
+  def self.send_discord_message: (String message) -> void
+  def self.create_discord_bot: (String token) -> Discordrb::Bot
+  def self.deliver_message_with_bot: (Discordrb::Bot bot, String channel, String message) -> void
+
+  # Logger helpers
+  @logger: Logger
+  def self.logger: -> Logger
+  def self.logger=: (Logger val) -> Logger
+
+  # Message helpers
+  def self.build_message: (Array[Google::Apis::CalendarV3::Event] events) -> String
+  def self.format_event: (Google::Apis::CalendarV3::Event event) -> String
+
+  # Message constants
+  module MessageConstants
+    ENV_MISSING_PREFIX: String
+    ENV_MISSING_ITEM_FORMAT: String
+    ENV_MISSING_SUFFIX: String
+    LOG_FETCHING_EVENTS: String
+    LOG_SENDING_DISCORD: String
+    LOG_COMPLETED: String
+    DISCORD_MESSAGE_NIL_EMPTY: String
+    DISCORD_FAILED_SEND_FORMAT: String
+    DISCORD_BOT_READY: String
+    DISCORD_FAILED_SEND_MESSAGE_FORMAT: String
+    DISCORD_DELIVERY_FAILED: String
+    DISCORD_MESSAGE_SENT: String
+    MESSAGE_NO_EVENTS: String
+    MESSAGE_WITH_EVENTS_PREFIX: String
+    EVENT_TIME_FORMAT_TEMPLATE: String
+    EVENT_ALL_DAY_FORMAT_TEMPLATE: String
+    JSON_LOG_FORMAT_TEMPLATE: String
+    TEXT_LOG_FORMAT_TEMPLATE: String
+    WEBRICK_ERROR_FORMAT: String
+    AUTH_FAILED_CI: String
+    AUTH_FAILED_NO_METHOD: String
+    AUTH_CODE_EXCHANGE_FAILED: String
+    AUTH_CODE_NOT_RECEIVED: String
+    BROWSER_AUTH_PROMPT: String
+    BROWSER_AUTO_OPEN_FAILED: String
+    AUTH_SUCCESS_HTML: String
+    CORRUPTED_TOKEN_DETECTED: String
+    BACKUP_CREATED: String
+    BACKUP_COPIED: String
+    BACKUP_FAILED: String
+
+    def self.oauth_callback_info: (Integer port) -> String
+    def self.corrupted_token_log: (String token_path, Class error_class, String error_message) -> String
+    def self.auth_code_exchange_error: (String message) -> String
+    def self.backup_failed_log: (String token_path, String error_message) -> String
+    def self.env_missing_item: (String key, String desc) -> String
+    def self.discord_failed_send: (String error_message) -> String
+    def self.discord_failed_send_message: (String error_message) -> String
+    def self.event_time_format: (String formatted_time, String summary) -> String
+    def self.event_all_day_format: (String summary) -> String
+    def self.json_log_format: (String timestamp, String app_name, String level, String message) -> String
+    def self.text_log_format: (String timestamp, String app_name, String level, String message) -> String
+    def self.webrick_error: (String error_message) -> String
+  end
 end

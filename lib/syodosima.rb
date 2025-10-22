@@ -32,11 +32,11 @@ module Syodosima
     missing = REQUIRED_ENV_VARS.select { |k, _| ENV[k].nil? || ENV[k].empty? }
     return if missing.empty?
 
-    msg = "Missing required environment variable(s):\n"
+    msg = MessageConstants::ENV_MISSING_PREFIX
     missing.each do |key, desc|
-      msg += "  - #{key}: #{desc}\n"
+      msg += MessageConstants.env_missing_item(key, desc)
     end
-    msg += "\nPlease set these variables in your .env file or environment."
+    msg += MessageConstants::ENV_MISSING_SUFFIX
     abort msg
   end
 
@@ -112,13 +112,13 @@ module Syodosima
     validate_env!
     write_credential_files!
 
-    logger.info("今日の予定を取得しています...")
+    logger.info(MessageConstants::LOG_FETCHING_EVENTS)
     events = fetch_today_events
 
     message = build_message(events)
 
-    logger.info("Discordに通知を送信します...")
+    logger.info(MessageConstants::LOG_SENDING_DISCORD)
     send_discord_message(message)
-    logger.info("完了しました！")
+    logger.info(MessageConstants::LOG_COMPLETED)
   end
 end

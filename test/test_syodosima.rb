@@ -108,7 +108,7 @@ class TestSyodosima < Minitest::Test
           mock_authorizer
         } do
           error = assert_raises(RuntimeError) { Syodosima.authorize }
-          expected_message = Syodosima::Messages::AUTH_FAILED_NO_METHOD
+          expected_message = Syodosima::MessageConstants::AUTH_FAILED_NO_METHOD
           assert_equal expected_message, error.message
         end
       end

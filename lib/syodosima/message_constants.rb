@@ -7,7 +7,7 @@ module Syodosima
   #
   # Contains all user-facing and log messages as frozen constants
   # to maintain consistency across the codebase and tests.
-  module Messages
+  module MessageConstants
     # OAuth and authentication error messages
     AUTH_FAILED_CI = "Google認証に失敗しました。CI 上では対話認証ができませんので、" \
                      "ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。".freeze

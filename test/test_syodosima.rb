@@ -30,6 +30,8 @@ class TestSyodosima < Minitest::Test
     @channel_id = ENV["DISCORD_CHANNEL_ID"]
     reset_constant(Syodosima, :DISCORD_BOT_TOKEN, @bot_token)
     reset_constant(Syodosima, :DISCORD_CHANNEL_ID, @channel_id)
+    # Initialize created_files for tests
+    Syodosima.instance_variable_set(:@created_files, [])
   end
 
   def teardown

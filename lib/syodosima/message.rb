@@ -4,6 +4,10 @@
 # message sent to Discord. Extracted from the main module for clarity
 # and better testability.
 module Syodosima
+  # Build the daily notification message from events
+  #
+  # @param [Array<Google::Apis::CalendarV3::Event>] events list of events
+  # @return [String] the formatted message
   def self.build_message(events)
     return "おはようございます！\n今日の予定はありません。" if events.empty?
 
@@ -13,6 +17,9 @@ module Syodosima
   end
 
   # Format a single event into a message line
+  #
+  # @param [Google::Apis::CalendarV3::Event] event the event to format
+  # @return [String] the formatted event string
   def self.format_event(event)
     if event.start.date_time
       start_time = event.start.date_time

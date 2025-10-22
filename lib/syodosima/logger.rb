@@ -53,10 +53,17 @@ module Syodosima
     end
   end
 
+  # Get the module-level logger instance
+  #
+  # @return [Logger] the configured logger
   def self.logger
     @logger
   end
 
+  # Set the module-level logger instance
+  #
+  # @param [Logger] val the logger to set
+  # @return [Logger] the logger that was set
   def self.logger=(val)
     @logger = val
   end

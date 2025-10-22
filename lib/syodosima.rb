@@ -24,6 +24,10 @@ module Syodosima
   require_relative "syodosima/discord"
   require_relative "syodosima/message"
 
+  # Validate required environment variables and configuration constants
+  #
+  # @return [void]
+  # @raise [SystemExit] if required environment variables are missing
   def self.validate_env!
     missing = REQUIRED_ENV_VARS.select { |k, _| ENV[k].nil? || ENV[k].empty? }
     return if missing.empty?
@@ -36,12 +40,19 @@ module Syodosima
     abort msg
   end
 
+  # Write credential files from environment variables#
+  #
+  # @return [void]
   def self.write_credential_files!
     write_env_file("GOOGLE_CREDENTIALS_JSON", CREDENTIALS_PATH)
     write_env_file("GOOGLE_TOKEN_YAML", TOKEN_PATH)
   end
 
   # Helper to write an environment variable content to a file with restrictive perms.
+  #
+  # @param [String] env_key the environment variable key
+  # @param [String] path the file path to write to
+  # @return [void]
   def self.write_env_file(env_key, path)
     v = ENV[env_key]
     return if v.to_s.strip == ""
@@ -62,6 +73,9 @@ module Syodosima
     end
   end
 
+  # Fetch today's events from Google Calendar
+  #
+  # @return [Array<Google::Apis::CalendarV3::Event>] list of today's events
   def self.fetch_today_events
     service = Google::Apis::CalendarV3::CalendarService.new
     service.client_options.application_name = APPLICATION_NAME
@@ -80,6 +94,8 @@ module Syodosima
   end
 
   # Compute RFC3339 time_min/time_max for today according to TIMEZONE_OFFSET
+  #
+  # @return [Array<String>] [time_min, time_max] in RFC3339 format
   def self.today_time_window
     timezone_offset = ENV.fetch("TIMEZONE_OFFSET", "+09:00")
     now_tz = DateTime.now.new_offset(timezone_offset)
@@ -89,6 +105,9 @@ module Syodosima
     [time_min, time_max]
   end
 
+  # Main entry point to run the notification process
+  #
+  # @return [void]
   def self.run
     validate_env!
     write_credential_files!

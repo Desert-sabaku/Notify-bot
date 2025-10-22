@@ -7,6 +7,10 @@ require "fileutils"
 # user authorization. These are extracted from the main module to
 # keep the top-level module concise.
 module Syodosima
+  # Perform OAuth authorization and return credentials
+  #
+  # @return [Google::Auth::UserRefreshCredentials] the OAuth credentials
+  # @raise [String] if authorization fails in CI or other environments
   def self.authorize
     client_id, token_store = client_id_and_token_store
     authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
@@ -38,6 +42,8 @@ module Syodosima
   end
 
   # Handle corrupted token file by backing up and deleting
+  #
+  # @return [void]
   def self.handle_corrupted_token
     return unless File.exist?(TOKEN_PATH)
 
@@ -58,6 +64,11 @@ module Syodosima
   end
 
   # Extracted interactive auth flow to reduce method complexity
+  #
+  # @param [Google::Auth::UserAuthorizer] authorizer the OAuth authorizer
+  # @param [String] user_id the user ID
+  # @return [Google::Auth::UserRefreshCredentials] the OAuth credentials
+  # @raise [String] if authorization fails
   def self.interactive_auth_flow(authorizer, user_id)
     raise Messages::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
@@ -93,15 +104,24 @@ module Syodosima
     credentials
   end
 
+  # Get the OAuth port from environment or default
+  #
+  # @return [Integer] the port number
   def self.oauth_port
     (ENV["OAUTH_PORT"] || "8080").to_i
   end
 
+  # Generate redirect URI for the given port
+  #
+  # @param [Integer] port the port number
+  # @return [String] the redirect URI
   def self.redirect_uri_for_port(port)
     "http://127.0.0.1:#{port}/oauth2callback"
   end
 
   # Helper: create client id and token store
+  #
+  # @return [Array<Google::Auth::ClientId, Google::Auth::Stores::FileTokenStore>] [client_id, token_store]
   def self.client_id_and_token_store
     client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
     token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
@@ -109,6 +129,9 @@ module Syodosima
   end
 
   # Helper: start oauth HTTP server and return [server, code_container, thread]
+  #
+  # @param [Integer] port the port to listen on
+  # @return [Array<WEBrick::HTTPServer, Hash, Thread>] [server, code_container, server_thread]
   def self.start_oauth_server(port)
     code_container = { code: nil }
 
@@ -128,11 +151,18 @@ module Syodosima
   end
 
   # Create WEBrick server with minimal logging (extracted for clarity)
+  #
+  # @param [Integer] port the port to listen on
+  # @return [WEBrick::HTTPServer] the configured server
   def self.create_webrick_server(port)
     WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new(IO::NULL), AccessLog: [])
   end
 
   # Return a proc that handles oauth callback requests and stores the code
+  #
+  # @param [Hash] code_container hash to store the authorization code
+  # @param [WEBrick::HTTPServer] server the WEBrick server to shutdown
+  # @return [Proc] the request handler proc
   def self.oauth_request_handler(code_container, server)
     proc do |req, res|
       q = URI.decode_www_form(req.query_string || "").to_h
@@ -144,6 +174,9 @@ module Syodosima
   end
 
   # Helper: try to open auth URL in browser (best-effort)
+  #
+  # @param [String] auth_url the authorization URL to open
+  # @return [void]
   def self.open_auth_url(auth_url)
     host_os = RbConfig::CONFIG["host_os"]
     case host_os

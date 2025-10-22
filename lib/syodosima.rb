@@ -40,7 +40,7 @@ module Syodosima
     abort msg
   end
 
-  # Write credential files from environment variables#
+  # Write credential files from environment variables
   #
   # @return [void]
   def self.write_credential_files!

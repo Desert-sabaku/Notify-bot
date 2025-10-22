@@ -1,3 +1,13 @@
+PATH
+  remote: .
+  specs:
+    syodosima (0.1.0)
+      discordrb
+      dotenv
+      google-apis-calendar_v3
+      pstore
+      webrick
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -42,30 +52,22 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
+    faraday-follow_redirects (0.4.0)
+      faraday (>= 1, < 3)
     faraday-net_http (3.4.1)
       net-http (>= 0.5.0)
     ffi (1.17.2-x86_64-linux-gnu)
     fileutils (1.7.3)
-    gems (1.3.0)
-    google-api-client (0.53.0)
-      google-apis-core (~> 0.1)
-      google-apis-generator (~> 0.1)
-    google-apis-core (0.18.0)
-      addressable (~> 2.5, >= 2.5.1)
-      googleauth (~> 1.9)
-      httpclient (>= 2.8.3, < 3.a)
-      mini_mime (~> 1.0)
-      mutex_m
+    google-apis-calendar_v3 (0.48.0)
+      google-apis-core (>= 0.15.0, < 2.a)
+    google-apis-core (1.0.2)
+      addressable (~> 2.8, >= 2.8.7)
+      faraday (~> 2.13)
+      faraday-follow_redirects (~> 0.3)
+      googleauth (~> 1.14)
+      mini_mime (~> 1.1)
       representable (~> 3.0)
-      retriable (>= 2.0, < 4.a)
-    google-apis-discovery_v1 (0.20.0)
-      google-apis-core (>= 0.15.0, < 2.a)
-    google-apis-generator (0.18.0)
-      activesupport (>= 5.0)
-      gems (~> 1.2)
-      google-apis-core (>= 0.15.0, < 2.a)
-      google-apis-discovery_v1 (~> 0.18)
-      thor (>= 0.20, < 2.a)
+      retriable (~> 3.1)
     google-cloud-env (2.3.1)
       base64 (~> 0.2)
       faraday (>= 1.0, < 3.a)
@@ -81,8 +83,6 @@ GEM
     http-accept (1.7.0)
     http-cookie (1.1.0)
       domain_name (~> 0.5)
-    httpclient (2.9.0)
-      mutex_m
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     jaro_winkler (1.6.1)
@@ -235,16 +235,13 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  discordrb
-  dotenv
-  google-api-client
-  pstore (~> 0.2.0)
-  rake (~> 13.3)
-  rbs
+  bundler
+  minitest
+  rake
   rubocop
   solargraph
   steep
-  webrick (~> 1.9)
+  syodosima!
 
 BUNDLED WITH
    2.6.9

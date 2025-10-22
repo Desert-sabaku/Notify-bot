@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Notify Discord of appointments on a given Google Calendar."
   spec.description = <<~DESC
-    "A Ruby gem that sends notifications to a Discord channel about events from a specified Google Calendar."
+    A Ruby gem that sends notifications to a Discord channel about events from a specified Google Calendar.
   DESC
   spec.homepage = "https://github.com/Desert-sabaku/syodosima"
   spec.license = "MIT"

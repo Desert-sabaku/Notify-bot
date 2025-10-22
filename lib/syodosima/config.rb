@@ -29,6 +29,6 @@ module Syodosima
   @created_files = []
 
   def self.created_files
-    @created_files
+    @created_files ||= []
   end
 end

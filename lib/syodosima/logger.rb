@@ -48,12 +48,12 @@ module Syodosima
   if format == "json"
     require "json"
     @logger.formatter = proc do |severity, datetime, _progname, msg|
-      "#{{ timestamp: datetime.iso8601, app: APPLICATION_NAME, level: severity, message: msg }.to_json}\n"
+      "#{{ timestamp: datetime.iso8601, app: Syodosima::APPLICATION_NAME, level: severity, message: msg }.to_json}\n"
     end
   else
     @logger.formatter = proc do |severity, datetime, _progname, msg|
       timestamp = datetime.iso8601
-      "#{timestamp} [#{APPLICATION_NAME}] #{severity} -- : #{msg}\n"
+      "#{timestamp} [#{Syodosima::APPLICATION_NAME}] #{severity} -- : #{msg}\n"
     end
   end
 

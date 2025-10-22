@@ -46,9 +46,8 @@ module Syodosima
     v = ENV[env_key]
     return if v.to_s.strip == ""
 
-    File.open(path, File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
-      file.write(v)
-    end
+    FileUtils.mkdir_p(File.dirname(path))
+    File.open(path, File::WRONLY | File::CREAT | File::TRUNC, 0o600) { |f| f.write(v) }
     created_files << path
   end
 

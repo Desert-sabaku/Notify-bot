@@ -11,6 +11,7 @@ class BotSpy
 
   def initialize
     @sent_messages = []
+    @connected = false
   end
 
   def ready(&block)
@@ -19,6 +20,7 @@ class BotSpy
 
   def run(async)
     @run_argument = async
+    @connected = true
     @ready_block&.call(nil)
   end
 
@@ -28,6 +30,7 @@ class BotSpy
 
   def stop
     @stopped = true
+    @connected = false
   end
 
   def join
@@ -40,6 +43,10 @@ class BotSpy
 
   def joined?
     !!@joined
+  end
+
+  def connected?
+    !!@connected
   end
 end
 

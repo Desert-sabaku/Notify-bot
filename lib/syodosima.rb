@@ -12,7 +12,7 @@ require "rbconfig"
 require "webrick"
 require "uri"
 
-module Syodosima
+module Syodosima # rubocop:disable Metrics/ModuleLength,Style/Documentation
   class Error < StandardError; end
 
   # Validate required environment variables
@@ -44,7 +44,7 @@ module Syodosima
     abort msg
   end
 
-  def self.write_credential_files!
+  def self.write_credential_files! # rubocop:disable Metrics/MethodLength
     if (v = ENV["GOOGLE_CREDENTIALS_JSON"]).to_s.strip != ""
       File.open(CREDENTIALS_PATH, File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
         file.write(v)
@@ -71,81 +71,100 @@ module Syodosima
   end
 
   def self.authorize
-    client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
-    token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
+    client_id, token_store = client_id_and_token_store
     authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
     user_id = "default"
     credentials = authorizer.get_credentials(user_id)
 
-    if credentials.nil?
-      if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-        raise "Google認証が必要ですが、CI では対話認証できません。token.yaml を Secret(GOOGLE_TOKEN_YAML) として設定してください。"
-      end
+    return credentials unless credentials.nil?
 
-      unless authorizer.respond_to?(:get_authorization_url)
-        raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
-      end
+    if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+      raise "Google認証が必要ですが、CI では対話認証できません。token.yaml を Secret(GOOGLE_TOKEN_YAML) として設定してください。"
+    end
 
-      port = (ENV["OAUTH_PORT"] || "8080").to_i
-      redirect_uri = "http://127.0.0.1:#{port}/oauth2callback"
+    unless authorizer.respond_to?(:get_authorization_url)
+      raise "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。"
+    end
 
-      server = WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new("/dev/null"), AccessLog: [])
+    port = (ENV["OAUTH_PORT"] || "8080").to_i
+    redirect_uri = "http://127.0.0.1:#{port}/oauth2callback"
 
-      code_container = { code: nil }
+    server, code_container, server_thread = start_oauth_server(port)
 
-      handler = proc do |req, res|
-        q = URI.decode_www_form(req.query_string || "").to_h
-        code_container[:code] = q["code"] || req.query["code"]
-        res.body = "<html><body><h1>認証成功！このウィンドウを閉じてください。</h1></body></html>"
-        res.content_type = "text/html; charset=utf-8"
-        Thread.new { server.shutdown }
-      end
+    auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
+    puts "ブラウザで認証してください："
+    puts auth_url
+    puts "このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）"
 
-      server.mount_proc "/oauth2callback", &handler
-      server.mount_proc "/auth/callback", &handler
+    open_auth_url(auth_url)
 
-      server_thread = Thread.new do
-        server.start
-      rescue StandardError => e
-        warn "WEBrick server error: #{e.message}"
-      end
+    server_thread.join
 
-      auth_url = authorizer.get_authorization_url(base_url: redirect_uri)
-      puts "ブラウザで認証してください："
-      puts auth_url
-      puts "このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）"
+    code = code_container[:code]
+    raise "認可コードが取得できませんでした。ブラウザでアクセスした際にこのプロセスが起動しているか確認してください。" if code.nil? || code.to_s.strip.empty?
 
-      begin
-        host_os = RbConfig::CONFIG["host_os"]
-        case host_os
-        when /linux|bsd/
-          system("xdg-open", auth_url)
-        when /darwin/
-          system("open", auth_url)
-        when /mswin|mingw|cygwin/
-          system("cmd", "/c", "start", "", auth_url)
-        end
-      rescue StandardError
-        # ignore failures to auto-open
-      end
-
-      server_thread.join
-
-      code = code_container[:code]
-      raise "認可コードが取得できませんでした。ブラウザでアクセスした際にこのプロセスが起動しているか確認してください。" if code.nil? || code.to_s.strip.empty?
-
-      begin
-        credentials = authorizer.get_and_store_credentials_from_code(
-          user_id: user_id,
-          code: code,
-          base_url: redirect_uri
-        )
-      rescue StandardError => e
-        raise "Google認証に失敗しました（コード交換エラー）: #{e.message}"
-      end
+    begin
+      credentials = authorizer.get_and_store_credentials_from_code(
+        user_id: user_id,
+        code: code,
+        base_url: redirect_uri
+      )
+    rescue StandardError => e
+      raise "Google認証に失敗しました（コード交換エラー）: #{e.message}"
+    ensure
+      # ensure server is shutdown if still running
+      server.shutdown if server && server.status != :Stop
     end
 
     credentials
+  end
+
+  # Helper: create client id and token store
+  def self.client_id_and_token_store
+    client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
+    token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
+    [client_id, token_store]
+  end
+
+  # Helper: start oauth HTTP server and return [server, code_container, thread]
+  def self.start_oauth_server(port)
+    server = WEBrick::HTTPServer.new(Port: port, Logger: WEBrick::Log.new("/dev/null"), AccessLog: [])
+    code_container = { code: nil }
+
+    handler = proc do |req, res|
+      q = URI.decode_www_form(req.query_string || "").to_h
+      code_container[:code] = q["code"] || req.query["code"]
+      res.body = "<html><body><h1>認証成功！このウィンドウを閉じてください。</h1></body></html>"
+      res.content_type = "text/html; charset=utf-8"
+      Thread.new { server.shutdown }
+    end
+
+    server.mount_proc "/oauth2callback", &handler
+    server.mount_proc "/auth/callback", &handler
+
+    server_thread = Thread.new do
+      server.start
+    rescue StandardError => e
+      warn "WEBrick server error: #{e.message}"
+    end
+
+    [server, code_container, server_thread]
+  end
+
+  # Helper: try to open auth URL in browser (best-effort)
+  def self.open_auth_url(auth_url)
+    host_os = RbConfig::CONFIG["host_os"]
+    case host_os
+    when /linux|bsd/
+      system("xdg-open", auth_url)
+    when /darwin/
+      system("open", auth_url)
+    when /mswin|mingw|cygwin/
+      system("cmd", "/c", "start", "", auth_url)
+    end
+  rescue StandardError
+    puts "ブラウザを自動で開けませんでした。URLを手動で開いてください："
+    puts auth_url
   end
 
   def self.fetch_today_events

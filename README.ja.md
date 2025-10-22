@@ -68,8 +68,10 @@ Syodosima は Google Calendar から今日の予定を自動的に取得し、Di
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
 DISCORD_CHANNEL_ID=your_channel_id_here
-GOOGLE_CREDENTIALS_JSON={"type":"service_account","project_id":"..."}  # credentials.jsonの内容
-GOOGLE_TOKEN_YAML=credentials_yaml_content_here  # token.yamlの内容
+# credentials.json の中身をそのまま貼り付けてください（OAuth クライアント ID: "installed" または "web"）
+GOOGLE_CREDENTIALS_JSON={...}  # 例は省略（実ファイル内容を貼り付け）
+# 初回認証で生成された token.yaml の中身を貼り付けてください
+GOOGLE_TOKEN_YAML=...
 ```
 
 #### GitHub Actions 実行時
@@ -167,7 +169,7 @@ Bot が送信するメッセージの例：
 
 ## 貢献
 
-バグレポートとプルリクエストは、GitHub の https://github.com/desert-sabaku/syodosima で受け付けています。このプロジェクトは、コラボレーションのための安全で歓迎的な空間となることを目的としており、貢献者は [行動規範](https://github.com/[USERNAME]/syodosima/blob/gem/CODE_OF_CONDUCT.md) を遵守することが期待されます。
+Bug report と Pull Request は、GitHub の [Desert-sabaku/syodosima](https://github.com/Desert-sabaku/syodosima) で受け付けています。このプロジェクトは、コラボレーションのための安全で歓迎的な空間となることを目的としており、貢献者は [行動規範](https://github.com/Desert-sabaku/syodosima/blob/main/CODE_OF_CONDUCT.md) を遵守することが期待されます。
 
 ## ライセンス
 

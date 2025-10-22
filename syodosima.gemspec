@@ -44,6 +44,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", ">= 13.3.0"
   spec.add_development_dependency "rubocop", ">= 1.81.1"
   spec.add_development_dependency "solargraph", ">= 0.57.0"
+  spec.add_development_dependency "steep", ">= 1.15.0"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

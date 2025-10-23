@@ -43,6 +43,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "rubocop-minitest"
+  spec.add_development_dependency "rubocop-performance"
   spec.add_development_dependency "solargraph"
   spec.add_development_dependency "steep"
 

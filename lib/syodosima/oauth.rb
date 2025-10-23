@@ -117,12 +117,11 @@ module Syodosima
     logger.info("-" * 70)
 
     # Automatically save to .env if user confirms
-    if auto_save_to_env?(base64_token)
-      logger.info("#{'=' * 70}\n")
-    else
+    unless auto_save_to_env?(base64_token)
       logger.info("\nYou can manually add the above line to your .env file.")
       logger.info("#{'=' * 70}\n")
     end
+    logger.info("#{'=' * 70}\n")
   rescue StandardError => e
     logger.warn("Could not display token save instructions: #{e.message}")
   end
@@ -145,7 +144,7 @@ module Syodosima
     $stdout.flush
 
     # Use STDIN.gets to avoid reading from ARGV in Rake context
-    response = STDIN.gets&.chomp&.downcase
+    response = $stdin.gets&.chomp&.downcase
 
     return false unless %w[y yes].include?(response)
 
@@ -160,7 +159,7 @@ module Syodosima
     lines << "GOOGLE_TOKEN_YAML_BASE64=#{base64_token}"
 
     # Write back to .env
-    File.write(env_file, lines.join("\n") + "\n")
+    File.write(env_file, "#{lines.join("\n")}\n")
     logger.info("✓ .envファイルに保存しました！")
     true
   rescue StandardError => e
@@ -186,8 +185,9 @@ module Syodosima
     end
 
     nil
-  end # Get the OAuth port from environment or default
+  end
 
+  # Get the OAuth port from environment or default
   #
   # @return [Integer] the port number
   def self.oauth_port

@@ -37,10 +37,10 @@ Syodosima は Google Calendar から今日の予定を自動的に取得し、Di
 
 ### 機能
 
-- Google Calendar から今日の予定を自動取得
-- 時刻付きイベントと終日イベントを適切に表示
-- Discord チャンネルに通知を送信
-- GitHub Actions での自動実行に対応
+-   Google Calendar から今日の予定を自動取得
+-   時刻付きイベントと終日イベントを適切に表示
+-   Discord チャンネルに通知を送信
+-   GitHub Actions での自動実行に対応
 
 ### 設定
 
@@ -68,48 +68,67 @@ Syodosima は Google Calendar から今日の予定を自動的に取得し、Di
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
 DISCORD_CHANNEL_ID=your_channel_id_here
-# credentials.json の中身をそのまま貼り付けてください（OAuth クライアント ID: "installed" または "web"）
-GOOGLE_CREDENTIALS_JSON={...}  # 例は省略（実ファイル内容を貼り付け）
-# 初回認証で生成された token.yaml の中身を貼り付けてください
-GOOGLE_TOKEN_YAML=...
+# credentials.json の中身をそのまま貼り付けてください
+GOOGLE_CREDENTIALS_JSON={"installed":{"client_id":"...","client_secret":"...","redirect_uris":["http://localhost"]}}
 ```
+
+> [!IMPORTANT]
+> 初回実行時のみブラウザ認証が必要です。認証後、トークン情報が表示されるので、
+> それを`.env`ファイルの`GOOGLE_TOKEN_YAML_BASE64`として保存してください。
 
 #### GitHub Actions 実行時
 
 GitHub リポジトリの Settings > Secrets and variables > Actions で以下のシークレットを設定：
 
-- `DISCORD_BOT_TOKEN`: Discord Bot のトークン
-- `DISCORD_CHANNEL_ID`: 通知を送信する Discord チャンネル ID
-- `GOOGLE_CREDENTIALS_JSON`: credentials.json ファイルの内容
-- `GOOGLE_TOKEN_YAML`: token.yaml ファイルの内容
+-   `DISCORD_BOT_TOKEN`: Discord Bot のトークン
+-   `DISCORD_CHANNEL_ID`: 通知を送信する Discord チャンネル ID
+-   `GOOGLE_CREDENTIALS_JSON`: credentials.json ファイルの内容
+-   `GOOGLE_TOKEN_YAML_BASE64`: 初回認証後に表示される Base64 エンコードされたトークン
 
 ### アプリケーションの実行
 
 #### ローカル実行
 
-1. 初回実行時は Google 認証が必要です。まず`irb`を起動し：
-
-```bash
-irb(main):001> require "syodosima"
-=> true
-irb(main):002> Syodosima.run
-```
-
-2. ブラウザで Google 認証を行い、表示されたコードをコンソールに入力
-3. 認証情報が `token.yaml` に保存されます
-
-> [!important]
-> カレントディレクトリに`.env`ファイルはありますか？
-> これがなければ`syodosima`は動作できません！
-
-なお、手動でインストールした場合には、`irb`ではなく`rake`タスクを使用してください。
+**初回実行（ブラウザ認証が必要）：**
 
 ```bash
 bundle exec rake run:once
 ```
 
-> [!NOTE]
-> この`rake`タスクは内部的に`Syodosima.run`を呼び出しています。
+ブラウザで認証を行うと、コンソールに以下のようなトークン情報が表示されます：
+
+```
+======================================================================
+認証が完了しました。以下のトークンを.envファイルに保存してください：
+----------------------------------------------------------------------
+GOOGLE_TOKEN_YAML_BASE64=LS0tCmRlZmF1bHQ6IC4uLg==
+----------------------------------------------------------------------
+
+.envファイルに自動で保存しますか？ (y/N):
+======================================================================
+```
+
+`y`を入力すると自動的に`.env`ファイルに保存されます。
+`N`を入力した場合や手動で保存したい場合は、表示された`GOOGLE_TOKEN_YAML_BASE64=...`の行を`.env`ファイルに追加してください。
+
+**2 回目以降の実行（再認証不要）：**
+
+```bash
+bundle exec rake run:once
+```
+
+> [!IMPORTANT] > `.env`ファイルに`GOOGLE_TOKEN_YAML_BASE64`を設定すれば、以降はブラウザ認証なしで実行できます。
+
+**irb での実行**
+
+gem としてインストールした場合：
+
+```bash
+irb
+irb(main):001> require "syodosima"
+=> true
+irb(main):002> Syodosima.run
+```
 
 #### GitHub Actions での自動実行
 
@@ -157,9 +176,9 @@ Bot が送信するメッセージの例：
 
 ### 注意事項
 
-- 初回実行時は Google 認証が必要です
-- タイムゾーンはシステムの設定に従います
-- Google Calendar のプライマリカレンダーの予定のみを取得します
+-   初回実行時は Google 認証が必要です
+-   タイムゾーンはシステムの設定に従います
+-   Google Calendar のプライマリカレンダーの予定のみを取得します
 
 ## 開発
 

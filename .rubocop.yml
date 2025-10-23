@@ -11,6 +11,10 @@ inherit_from: .rubocop_todo.yml
 #
 # See https://docs.rubocop.org/rubocop/configuration
 
+require:
+  - rubocop-minitest
+  - rubocop-performance
+
 Style/StringLiterals:
     EnforcedStyle: double_quotes
 

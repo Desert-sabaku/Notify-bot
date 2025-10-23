@@ -63,14 +63,18 @@ Please set the following environment variables:
 
 #### For Local Execution
 
-Create a `.env` file and describe the following:
+Create a `.env` file and add the following content:
 
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
 DISCORD_CHANNEL_ID=your_channel_id_here
-GOOGLE_CREDENTIALS_JSON={"type":"service_account","project_id":"..."}  # contents of credentials.json
-GOOGLE_TOKEN_YAML=credentials_yaml_content_here  # contents of token.yaml
+# Paste the contents of credentials.json
+GOOGLE_CREDENTIALS_JSON={"installed":{"client_id":"...","client_secret":"...","redirect_uris":["http://localhost"]}}
 ```
+
+> [!IMPORTANT]
+> Browser authentication is required on first run only. After authentication,
+> token information will be displayed. Save it to `.env` as `GOOGLE_TOKEN_YAML_BASE64`.
 
 #### For GitHub Actions Execution
 
@@ -79,35 +83,53 @@ Set the following secrets in GitHub repository Settings > Secrets and variables 
 -   `DISCORD_BOT_TOKEN`: Discord Bot token
 -   `DISCORD_CHANNEL_ID`: Discord channel ID to send notifications to
 -   `GOOGLE_CREDENTIALS_JSON`: Contents of credentials.json file
--   `GOOGLE_TOKEN_YAML`: Contents of token.yaml file
+-   `GOOGLE_TOKEN_YAML_BASE64`: Base64-encoded token displayed after first authentication
 
 ### Running the Application
 
 #### Local Execution
 
-1. For the first run, Google authentication is required. First, launch `irb`:
-
-```bash
-irb(main):001> require "syodosima"
-=> true
-irb(main):002> Syodosima.run
-```
-
-2. Perform Google authentication in the browser and enter the displayed code in the console
-3. Authentication information will be saved in `token.yaml`
-
-> [!important]
-> Do you have a `.env` file in the current directory?
-> Without this, `syodosima` will not work!
-
-For manual installation, use the `rake` task instead of `irb`.
+**First run (browser authentication required):**
 
 ```bash
 bundle exec rake run:once
 ```
 
-> [!NOTE]
-> This `rake` task internally calls `Syodosima.run`.
+After authentication, token information will be displayed in the console:
+
+```
+======================================================================
+認証が完了しました。以下のトークンを.envファイルに保存してください：
+----------------------------------------------------------------------
+GOOGLE_TOKEN_YAML_BASE64=LS0tCmRlZmF1bHQ6IC4uLg==
+----------------------------------------------------------------------
+
+.envファイルに自動で保存しますか？ (y/N):
+======================================================================
+```
+
+If you enter `y`, the token will be automatically saved to your `.env` file.
+If you enter `N` or want to save manually, add the displayed `GOOGLE_TOKEN_YAML_BASE64=...` line to your `.env` file.
+
+**Subsequent runs (no re-authentication needed):**
+
+```bash
+bundle exec rake run:once
+```
+
+> [!IMPORTANT]
+> Once you set `GOOGLE_TOKEN_YAML_BASE64` in `.env`, you can run without browser authentication.
+
+**Running with irb**
+
+If installed as a gem:
+
+```bash
+irb
+irb(main):001> require "syodosima"
+=> true
+irb(main):002> Syodosima.run
+```
 
 #### Automatic Execution in GitHub Actions
 

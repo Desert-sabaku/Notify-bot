@@ -23,6 +23,19 @@ module Syodosima
   # @param [String] token the Discord bot token
   # @return [Discordrb::Bot] the bot instance
   def self.create_discord_bot(token)
+    # Try to reduce noisy websocket/library logs from discordrb by raising its
+    # logger level to WARN. This is best-effort — if discordrb's logger isn't
+    # available we silently continue.
+    begin
+      if defined?(Discordrb::LOGGER)
+        Discordrb::LOGGER.level = Logger::WARN
+      elsif Discordrb.respond_to?(:logger) && Discordrb.logger.respond_to?(:level=)
+        Discordrb.logger.level = Logger::WARN
+      end
+    rescue StandardError
+      # ignore — don't let logging configuration break message delivery
+    end
+
     Discordrb::Bot.new(token: token)
   end
 

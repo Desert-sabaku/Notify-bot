@@ -21,10 +21,13 @@ module Syodosima
   # OAuth helpers
   def self.authorize: -> Google::Auth::UserRefreshCredentials
   def self.handle_corrupted_token: -> void
-  def self.interactive_auth_flow: (Google::Auth::UserAuthorizer authorizer, String user_id) -> Google::Auth::UserRefreshCredentials
+  def self.interactive_auth_flow: (Google::Auth::UserAuthorizer authorizer, Syodosima::MemoryTokenStore token_store, String user_id) -> Google::Auth::UserRefreshCredentials
+  def self.display_token_instructions: (Syodosima::MemoryTokenStore token_store, String user_id) -> void
+  def self.auto_save_to_env?: (String base64_token) -> bool
+  def self.find_env_file: -> String?
   def self.oauth_port: -> Integer
   def self.redirect_uri_for_port: (Integer port) -> String
-  def self.client_id_and_token_store: -> [Google::Auth::ClientId, Google::Auth::Stores::FileTokenStore]
+  def self.client_id_and_token_store: -> [Google::Auth::ClientId, Syodosima::MemoryTokenStore]
   def self.start_oauth_server: (Integer port) -> [WEBrick::HTTPServer, Hash[Symbol, untyped], Thread]
   def self.create_webrick_server: (Integer port) -> WEBrick::HTTPServer
   def self.oauth_request_handler: (Hash[Symbol, untyped] code_container, WEBrick::HTTPServer server) -> Proc

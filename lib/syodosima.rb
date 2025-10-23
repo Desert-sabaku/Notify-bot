@@ -3,7 +3,6 @@ require_relative "syodosima/version"
 require "bundler/setup"
 require "google/apis/calendar_v3"
 require "googleauth"
-require "googleauth/stores/file_token_store"
 require "fileutils"
 require "discordrb"
 require "date"
@@ -20,6 +19,7 @@ module Syodosima
   require_relative "syodosima/config"
   require_relative "syodosima/logger"
   require_relative "syodosima/message_constants"
+  require_relative "syodosima/memory_token_store"
   require_relative "syodosima/oauth"
   require_relative "syodosima/discord"
   require_relative "syodosima/message_builder"
@@ -45,7 +45,6 @@ module Syodosima
   # @return [void]
   def self.write_credential_files!
     write_env_file("GOOGLE_CREDENTIALS_JSON", CREDENTIALS_PATH)
-    write_env_file("GOOGLE_TOKEN_YAML", TOKEN_PATH)
   end
 
   # Helper to write an environment variable content to a file with restrictive perms.

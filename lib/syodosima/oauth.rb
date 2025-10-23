@@ -16,32 +16,18 @@ module Syodosima
     authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
     user_id = "default"
 
-    begin
-      credentials = authorizer.get_credentials(user_id)
-    rescue StandardError => e
-      # Some environments may raise a PStore::Error when the token file is corrupted.
-      # Avoid requiring the pstore library; detect by class name instead.
-      raise unless e.is_a?(::PStore::Error)
-
-      logger.warn(MessageConstants.corrupted_token_log(TOKEN_PATH, e.class, e.message))
-
-      # In CI, do not attempt deletion or interactive auth; surface a clear error.
-      raise MessageConstants::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-
-      handle_corrupted_token
-      # Retry once after cleanup
-      client_id, token_store = client_id_and_token_store
-      authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
-      credentials = authorizer.get_credentials(user_id)
-    end
-
+    credentials = authorizer.get_credentials(user_id)
     return credentials unless credentials.nil?
 
+    # In CI, do not attempt interactive auth
+    raise MessageConstants::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
+
     # perform interactive authorization flow (extracted to reduce complexity)
-    interactive_auth_flow(authorizer, user_id)
+    interactive_auth_flow(authorizer, token_store, user_id)
   end
 
   # Handle corrupted token file by backing up and deleting
+  # NOTE: This is kept for backward compatibility but no longer used
   #
   # @return [void]
   def self.handle_corrupted_token
@@ -66,10 +52,11 @@ module Syodosima
   # Extracted interactive auth flow to reduce method complexity
   #
   # @param [Google::Auth::UserAuthorizer] authorizer the OAuth authorizer
+  # @param [Syodosima::MemoryTokenStore] token_store the token store
   # @param [String] user_id the user ID
   # @return [Google::Auth::UserRefreshCredentials] the OAuth credentials
   # @raise [RuntimeError] if authorization fails
-  def self.interactive_auth_flow(authorizer, user_id)
+  def self.interactive_auth_flow(authorizer, token_store, user_id)
     raise MessageConstants::AUTH_FAILED_CI if ENV["CI"] || ENV["GITHUB_ACTIONS"]
 
     raise MessageConstants::AUTH_FAILED_NO_METHOD unless authorizer.respond_to?(:get_authorization_url)
@@ -101,10 +88,106 @@ module Syodosima
       raise MessageConstants.auth_code_exchange_error(e.message)
     end
 
+    # Display token information for user to save to .env
+    display_token_instructions(token_store, user_id)
+
     credentials
   end
 
-  # Get the OAuth port from environment or default
+  # Display instructions for saving token to .env file and optionally save it
+  #
+  # @param [Object] token_store the token store containing the new token
+  # @param [String] user_id the user ID
+  # @return [void]
+  def self.display_token_instructions(token_store, user_id)
+    return unless token_store.is_a?(MemoryTokenStore)
+
+    token_data = token_store.load(user_id)
+    return if token_data.nil? || token_data.empty?
+
+    require "yaml"
+    require "base64"
+    yaml_content = { user_id => token_data }.to_yaml
+    base64_token = Base64.strict_encode64(yaml_content)
+
+    logger.info("\n#{'=' * 70}")
+    logger.info(MessageConstants::TOKEN_SAVE_INSTRUCTIONS)
+    logger.info("-" * 70)
+    logger.info("GOOGLE_TOKEN_YAML_BASE64=#{base64_token}")
+    logger.info("-" * 70)
+
+    # Automatically save to .env if user confirms
+    if auto_save_to_env?(base64_token)
+      logger.info("#{'=' * 70}\n")
+    else
+      logger.info("\nYou can manually add the above line to your .env file.")
+      logger.info("#{'=' * 70}\n")
+    end
+  rescue StandardError => e
+    logger.warn("Could not display token save instructions: #{e.message}")
+  end
+
+  # Automatically save token to .env file with user confirmation
+  #
+  # @param [String] base64_token the Base64-encoded token
+  # @return [Boolean] true if saved successfully, false otherwise
+  def self.auto_save_to_env?(base64_token)
+    # Find .env file in current directory or parent directories
+    env_file = find_env_file
+
+    # Skip if .env doesn't exist
+    unless env_file
+      logger.info("\n手動で.envファイルに上記の行を追加してください。")
+      return false
+    end
+
+    print "\n.envファイルに自動で保存しますか？ (y/N): "
+    $stdout.flush
+
+    # Use STDIN.gets to avoid reading from ARGV in Rake context
+    response = STDIN.gets&.chomp&.downcase
+
+    return false unless %w[y yes].include?(response)
+
+    # Read existing .env content
+    content = File.read(env_file)
+    lines = content.split("\n")
+
+    # Remove existing GOOGLE_TOKEN_YAML_BASE64 line
+    lines.reject! { |line| line.start_with?("GOOGLE_TOKEN_YAML_BASE64=") }
+
+    # Add new token
+    lines << "GOOGLE_TOKEN_YAML_BASE64=#{base64_token}"
+
+    # Write back to .env
+    File.write(env_file, lines.join("\n") + "\n")
+    logger.info("✓ .envファイルに保存しました！")
+    true
+  rescue StandardError => e
+    logger.warn("Failed to save to .env: #{e.message}")
+    false
+  end
+
+  # Find .env file in current directory or parent directories
+  #
+  # @return [String, nil] path to .env file or nil if not found
+  def self.find_env_file
+    current_dir = Dir.pwd
+
+    # Try current directory and up to 5 parent directories
+    6.times do
+      env_path = File.join(current_dir, ".env")
+      return env_path if File.exist?(env_path)
+
+      parent = File.dirname(current_dir)
+      break if parent == current_dir # Reached root
+
+      current_dir = parent
+    end
+
+    nil
+  end # Get the OAuth port from environment or default
+
   #
   # @return [Integer] the port number
   def self.oauth_port
@@ -121,10 +204,10 @@ module Syodosima
 
   # Helper: create client id and token store
   #
-  # @return [Array<Google::Auth::ClientId, Google::Auth::Stores::FileTokenStore>] [client_id, token_store]
+  # @return [Array<Google::Auth::ClientId, Syodosima::MemoryTokenStore>] [client_id, token_store]
   def self.client_id_and_token_store
     client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
-    token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
+    token_store = MemoryTokenStore.new
     [client_id, token_store]
   end
 

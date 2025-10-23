@@ -54,7 +54,7 @@ module TestHelper
   EventTime = Struct.new(:date_time, :date)
   Event = Struct.new(:start, :end, :summary)
 
-  ENV_KEYS = %w[DISCORD_BOT_TOKEN DISCORD_CHANNEL_ID GOOGLE_CREDENTIALS_JSON GOOGLE_TOKEN_YAML].freeze
+  ENV_KEYS = %w[DISCORD_BOT_TOKEN DISCORD_CHANNEL_ID GOOGLE_CREDENTIALS_JSON GOOGLE_TOKEN_YAML_BASE64].freeze
 
   # Set up environment variables for testing (optionally override via hash)
   def setup_env_vars(overrides = {})
@@ -63,7 +63,7 @@ module TestHelper
       "DISCORD_BOT_TOKEN" => "test_token",
       "DISCORD_CHANNEL_ID" => "123456789",
       "GOOGLE_CREDENTIALS_JSON" => '{"type":"service_account","project_id":"test"}',
-      "GOOGLE_TOKEN_YAML" => "test_token_yaml"
+      "GOOGLE_TOKEN_YAML_BASE64" => Base64.strict_encode64({ "default" => "test_token_yaml" }.to_yaml)
     }
     defaults.merge(overrides).each { |k, v| ENV[k] = v }
   end

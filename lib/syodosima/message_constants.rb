@@ -41,8 +41,9 @@ module Syodosima
 
     # OAuth and authentication error messages
     AUTH_FAILED_CI = "Google認証に失敗しました。CI 上では対話認証ができませんので、" \
-                     "ローカルで一度認証を通し、token.yaml を Secret (GOOGLE_TOKEN_YAML) に登録してください。".freeze
-    AUTH_FAILED_NO_METHOD = "Google認証に失敗しました。ローカルで一度認証を通し、token.yamlをSecretに登録してください。".freeze
+                     "ローカルで一度認証を通し、GOOGLE_TOKEN_YAML_BASE64 を Secret に登録してください。".freeze
+    AUTH_FAILED_NO_METHOD = "Google認証に失敗しました。ローカルで一度認証を通し、" \
+                            "GOOGLE_TOKEN_YAML_BASE64をSecretに登録してください。".freeze
     AUTH_CODE_EXCHANGE_FAILED = "Google認証に失敗しました（コード交換エラー）".freeze
     AUTH_CODE_NOT_RECEIVED = "認可コードが取得できませんでした。ブラウザでアクセスした際にこのプロセスが起動しているか確認してください。".freeze
 
@@ -51,11 +52,8 @@ module Syodosima
     BROWSER_AUTO_OPEN_FAILED = "ブラウザを自動で開けませんでした。URLを手動で開いてください：".freeze
     AUTH_SUCCESS_HTML = "<html><body><h1>認証成功！このウィンドウを閉じてください。</h1></body></html>".freeze
 
-    # Token corruption messages
-    CORRUPTED_TOKEN_DETECTED = "Detected corrupted token store".freeze
-    BACKUP_CREATED = "Backed up corrupted token file to:".freeze
-    BACKUP_COPIED = "Copied corrupted token file to backup:".freeze
-    BACKUP_FAILED = "Failed to backup/delete corrupted token file".freeze
+    # Token save instructions
+    TOKEN_SAVE_INSTRUCTIONS = "認証が完了しました。以下のトークンを.envファイルに保存してください：".freeze
 
     # Helper methods for formatted messages
     #
@@ -65,25 +63,10 @@ module Syodosima
       "このプロセスは 127.0.0.1:#{port} でコールバックを待ち受けます。（PATH: /oauth2callback または /auth/callback）"
     end
 
-    # @param [String] token_path path to the token file
-    # @param [Class] error_class the error class
-    # @param [String] error_message the error message
-    # @return [String] formatted corrupted token log message
-    def self.corrupted_token_log(token_path, error_class, error_message)
-      "#{CORRUPTED_TOKEN_DETECTED} (#{token_path}): #{error_class}: #{error_message}"
-    end
-
     # @param [String] message the error message
     # @return [String] formatted auth code exchange error message
     def self.auth_code_exchange_error(message)
       "#{AUTH_CODE_EXCHANGE_FAILED}: #{message}"
-    end
-
-    # @param [String] token_path path to the token file
-    # @param [String] error_message the error message
-    # @return [String] formatted backup failed log message
-    def self.backup_failed_log(token_path, error_message)
-      "#{BACKUP_FAILED} #{token_path}: #{error_message}"
     end
 
     # @param [String] key environment variable key

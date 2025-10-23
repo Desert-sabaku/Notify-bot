@@ -42,7 +42,7 @@ class TestSyodosima < Minitest::Test
     assert @bot_token, "DISCORD_BOT_TOKEN should be set"
     assert @channel_id, "DISCORD_CHANNEL_ID should be set"
     assert ENV["GOOGLE_CREDENTIALS_JSON"], "GOOGLE_CREDENTIALS_JSON should be set"
-    assert ENV["GOOGLE_TOKEN_YAML"], "GOOGLE_TOKEN_YAML should be set"
+    assert ENV["GOOGLE_TOKEN_YAML_BASE64"], "GOOGLE_TOKEN_YAML_BASE64 should be set"
   end
 
   def test_authorize_with_valid_credentials
@@ -51,7 +51,6 @@ class TestSyodosima < Minitest::Test
     mock_credentials = Object.new
 
     captured_path = nil
-    captured_token_path = nil
     captured_authorizer_args = nil
     captured = {}
 
@@ -61,8 +60,7 @@ class TestSyodosima < Minitest::Test
       captured_path = path
       mock_client_id
     } do
-      Google::Auth::Stores::FileTokenStore.stub :new, lambda { |file:|
-        captured_token_path = file
+      Syodosima::MemoryTokenStore.stub :new, lambda { |*_args|
         mock_token_store
       } do
         Google::Auth::UserAuthorizer.stub :new, lambda { |client, scope, store|
@@ -75,7 +73,6 @@ class TestSyodosima < Minitest::Test
     end
 
     assert_equal Syodosima::CREDENTIALS_PATH, captured_path
-    assert_equal Syodosima::TOKEN_PATH, captured_token_path
     assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   end
@@ -89,7 +86,6 @@ class TestSyodosima < Minitest::Test
     mock_token_store = Object.new
 
     captured_path = nil
-    captured_token_path = nil
     captured_authorizer_args = nil
     captured = {}
 
@@ -99,8 +95,7 @@ class TestSyodosima < Minitest::Test
       captured_path = path
       mock_client_id
     } do
-      Google::Auth::Stores::FileTokenStore.stub :new, lambda { |file:|
-        captured_token_path = file
+      Syodosima::MemoryTokenStore.stub :new, lambda { |*_args|
         mock_token_store
       } do
         Google::Auth::UserAuthorizer.stub :new, lambda { |client, scope, store|
@@ -115,7 +110,6 @@ class TestSyodosima < Minitest::Test
     end
 
     assert_equal Syodosima::CREDENTIALS_PATH, captured_path
-    assert_equal Syodosima::TOKEN_PATH, captured_token_path
     assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   ensure

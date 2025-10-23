@@ -106,9 +106,9 @@ module TestHelper
 
     yield
   ensure
-    Object.define_method(method_name) { |*args, &block| original_method.bind(self).call(*args, &block) }
+    Object.define_method(method_name) { |*args, &block| original_method.bind_call(self, *args, &block) }
     Object.send(visibility, method_name)
-    Kernel.define_method(method_name) { |*args, &block| original_method.bind(self).call(*args, &block) }
+    Kernel.define_method(method_name) { |*args, &block| original_method.bind_call(self, *args, &block) }
     Kernel.send(visibility, method_name)
   end
 

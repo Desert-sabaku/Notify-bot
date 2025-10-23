@@ -132,7 +132,7 @@ class TestSyodosima < Minitest::Test
 
         calendar_id, params = service.list_args
         assert_equal "primary", calendar_id
-        assert_equal true, params[:single_events]
+        assert params[:single_events]
         assert_equal "startTime", params[:order_by]
         assert_match(/T00:00:00\+09:00\z/, params[:time_min])
         assert_match(/T23:59:59\+09:00\z/, params[:time_max])
@@ -151,7 +151,7 @@ class TestSyodosima < Minitest::Test
     assert_equal [[@channel_id, test_message]], bot_spy.sent_messages
     assert bot_spy.stopped?, "Bot should stop after sending message"
     assert bot_spy.joined?, "Bot should join after run"
-    assert_equal true, bot_spy.run_argument
+    assert bot_spy.run_argument
   end
 
   def test_main_with_no_events

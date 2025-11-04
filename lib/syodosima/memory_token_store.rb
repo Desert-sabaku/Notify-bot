@@ -57,7 +57,7 @@ module Syodosima
     def load_base64_token
       require "base64"
       require "yaml"
-      decoded = Base64.decode64(ENV["GOOGLE_TOKEN_YAML_BASE64"])
+      decoded = Base64.strict_decode64(ENV["GOOGLE_TOKEN_YAML_BASE64"])
       data = YAML.safe_load(decoded, permitted_classes: [Symbol])
       @tokens.merge!(data) if data.is_a?(Hash)
     rescue StandardError => e

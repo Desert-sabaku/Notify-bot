@@ -113,17 +113,18 @@ module Syodosima
     logger.info("\n#{'=' * 70}")
     logger.info(MessageConstants::TOKEN_SAVE_INSTRUCTIONS)
     logger.info("-" * 70)
-    logger.info("GOOGLE_TOKEN_YAML_BASE64=#{base64_token}")
+    masked = "#{base64_token[0, 6]}...#{base64_token[-6, 6]}"
+    logger.info("GOOGLE_TOKEN_YAML_BASE64=<hidden: #{masked}>")
     logger.info("-" * 70)
+    puts "GOOGLE_TOKEN_YAML_BASE64=#{base64_token}" if $stdout.tty?
 
     # Automatically save to .env if user confirms
     unless auto_save_to_env?(base64_token)
-      logger.info("\nYou can manually add the above line to your .env file.")
+      logger.info("\n#{MessageConstants::TOKEN_MANUAL_ADD}")
       logger.info("#{'=' * 70}\n")
     end
-    logger.info("#{'=' * 70}\n")
   rescue StandardError => e
-    logger.warn("Could not display token save instructions: #{e.message}")
+    logger.warn(format(MessageConstants::TOKEN_INSTRUCTIONS_FAILED_FORMAT, e.message))
   end
 
   # Automatically save token to .env file with user confirmation
@@ -136,11 +137,11 @@ module Syodosima
 
     # Skip if .env doesn't exist
     unless env_file
-      logger.info("\n手動で.envファイルに上記の行を追加してください。")
+      logger.info("\n#{MessageConstants::TOKEN_MANUAL_ADD}")
       return false
     end
 
-    print "\n.envファイルに自動で保存しますか？ (y/N): "
+    print "\n#{MessageConstants::TOKEN_SAVE_PROMPT}"
     $stdout.flush
 
     # Use STDIN.gets to avoid reading from ARGV in Rake context
@@ -153,17 +154,17 @@ module Syodosima
     lines = content.split("\n")
 
     # Remove existing GOOGLE_TOKEN_YAML_BASE64 line
-    lines.reject! { |line| line.start_with?("GOOGLE_TOKEN_YAML_BASE64=") }
+    lines.reject! { |line| line =~ /^\s*GOOGLE_TOKEN_YAML_BASE64=/ }
 
     # Add new token
     lines << "GOOGLE_TOKEN_YAML_BASE64=#{base64_token}"
 
     # Write back to .env
     File.write(env_file, "#{lines.join("\n")}\n")
-    logger.info("✓ .envファイルに保存しました！")
+    logger.info(MessageConstants::TOKEN_SAVE_SUCCESS)
     true
   rescue StandardError => e
-    logger.warn("Failed to save to .env: #{e.message}")
+    logger.warn(format(MessageConstants::TOKEN_SAVE_FAILED_FORMAT, e.message))
     false
   end
 

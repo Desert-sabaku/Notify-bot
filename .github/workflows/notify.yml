@@ -1,12 +1,11 @@
-name: Send Daily Calendar Events
+name: Send Daily Calendar Events (JST 16:00 for next day)
 
 on:
-    # 毎朝6時 (JST) に実行するためのスケジュール
-    # UTCでは前日の21時になるため、'0 21 * * *' と指定
+    # Run daily at 16:00 JST (07:00 UTC)
     schedule:
-        - cron: "0 21 * * *"
+        - cron: "0 7 * * *"
 
-    # 手動で実行できるようにするための設定
+    # Allow manual runs
     workflow_dispatch:
 
 jobs:
@@ -14,23 +13,22 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            # 1. リポジトリのコードをチェックアウト
             - name: Checkout repository
-              uses: actions/checkout@v4
+                uses: actions/checkout@v4
 
-            # 2. Rubyの環境をセットアップ
             - name: Set up Ruby
-              uses: ruby/setup-ruby@v1
-              with:
-                  ruby-version: "3.4" # Gemfile.lockに合わせたバージョンを指定
-                  bundler-cache: true # bundle installを自動で実行
+                uses: ruby/setup-ruby@v1
+                with:
+                    ruby-version: "3.4"
+                    bundler-cache: true
 
-            # 3. Rubyスクリプトを実行
-            - name: Run notifier script
-              env:
-                  # GitHub Secretsの値を環境変数としてスクリプトに渡す
-                  DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-                  DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-                  GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-                  GOOGLE_TOKEN_YAML: ${{ secrets.GOOGLE_TOKEN_YAML }}
-              run: bundle exec ruby lib/main.rb
+            - name: Compute DATE for tomorrow (JST)
+                run: echo "DATE=$(TZ=Asia/Tokyo date -d tomorrow +%F)" >> "$GITHUB_ENV"
+
+            - name: Run notifier script (tomorrow's events)
+                env:
+                    DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+                    DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+                    GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+                    GOOGLE_TOKEN_YAML_BASE64: ${{ secrets.GOOGLE_TOKEN_YAML_BASE64 }}
+                run: DATE="$DATE" bundle exec rake run:date

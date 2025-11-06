@@ -49,7 +49,7 @@ Syodosima automatically retrieves today's appointments from Google Calendar and 
 1. Create a new project in [Google Cloud Console](https://console.cloud.google.com/)
 2. Enable Google Calendar API
 3. Create credentials (OAuth 2.0 Client ID)
-4. Download the `credentials.json` file
+4. Download the OAuth client credentials JSON
 
 #### Discord Bot Setup
 
@@ -68,7 +68,7 @@ Create a `.env` file and add the following content:
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
 DISCORD_CHANNEL_ID=your_channel_id_here
-# Paste the contents of credentials.json
+# Paste the OAuth client credentials JSON from Google Cloud Console
 GOOGLE_CREDENTIALS_JSON={"installed":{"client_id":"...","client_secret":"...","redirect_uris":["http://localhost"]}}
 ```
 
@@ -82,7 +82,7 @@ Set the following secrets in GitHub repository Settings > Secrets and variables 
 
 -   `DISCORD_BOT_TOKEN`: Discord Bot token
 -   `DISCORD_CHANNEL_ID`: Discord channel ID to send notifications to
--   `GOOGLE_CREDENTIALS_JSON`: Contents of credentials.json file
+-   `GOOGLE_CREDENTIALS_JSON`: OAuth client credentials JSON from Google Cloud Console
 -   `GOOGLE_TOKEN_YAML_BASE64`: Base64-encoded token displayed after first authentication
 
 ### Running the Application

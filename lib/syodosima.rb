@@ -40,38 +40,6 @@ module Syodosima
     abort msg
   end
 
-  # Write credential files from environment variables
-  #
-  # @return [void]
-  def self.write_credential_files!
-    write_env_file("GOOGLE_CREDENTIALS_JSON", CREDENTIALS_PATH)
-  end
-
-  # Helper to write an environment variable content to a file with restrictive perms.
-  #
-  # @param [String] env_key the environment variable key
-  # @param [String] path the file path to write to
-  # @return [void]
-  def self.write_env_file(env_key, path)
-    v = ENV[env_key]
-    return if v.to_s.strip == ""
-
-    FileUtils.mkdir_p(File.dirname(path))
-    File.open(path, File::WRONLY | File::CREAT | File::TRUNC, 0o600) { |f| f.write(v) }
-    created_files << path
-  end
-
-  # Register at_exit handler only in CI environments
-  if ENV["CI"] || ENV["GITHUB_ACTIONS"]
-    at_exit do
-      created_files.each do |file|
-        File.delete(file) if File.exist?(file)
-      rescue StandardError => e
-        warn "Warning: Failed to cleanup #{file}: #{e.message}"
-      end
-    end
-  end
-
   # Fetch today's events from Google Calendar
   #
   # @return [Array<Google::Apis::CalendarV3::Event>] list of today's events
@@ -109,7 +77,6 @@ module Syodosima
   # @return [void]
   def self.run
     validate_env!
-    write_credential_files!
 
     logger.info(MessageConstants::LOG_FETCHING_EVENTS)
     events = fetch_today_events

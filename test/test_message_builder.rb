@@ -45,8 +45,7 @@ class TestMessageHelpers < Minitest::Test
     future_date = Date.new(2025, 12, 25)
 
     result = Syodosima.build_message([event], future_date)
-    expected = "2025年12月25日の予定をお知らせします。\n\n" +
-               Syodosima::MessageConstants.event_time_format("09:00〜10:00", "クリスマス会議")
+    expected = "2025年12月25日の予定をお知らせします。\n\n#{Syodosima::MessageConstants.event_time_format('09:00〜10:00', 'クリスマス会議')}"
 
     assert_equal expected, result
   end

@@ -97,7 +97,7 @@ bundle exec rake run:once
 
 After authentication, token information will be displayed in the console:
 
-```
+```plaintext
 ======================================================================
 認証が完了しました。以下のトークンを.envファイルに保存してください：
 ----------------------------------------------------------------------
@@ -127,7 +127,7 @@ bundle exec rake run:once
 > bundle exec rake run:once 2>&1 | grep -v '\[.*websocket\|et-[0-9]\+'
 > ```
 
-**Running with irb**
+### Running with irb
 
 If installed as a gem:
 

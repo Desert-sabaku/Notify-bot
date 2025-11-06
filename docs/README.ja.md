@@ -117,7 +117,8 @@ GOOGLE_TOKEN_YAML_BASE64=LS0tCmRlZmF1bHQ6IC4uLg==
 bundle exec rake run:once
 ```
 
-> [!IMPORTANT] > `.env`ファイルに`GOOGLE_TOKEN_YAML_BASE64`を設定すれば、以降はブラウザ認証なしで実行できます。
+> [!IMPORTANT]
+> `.env`ファイルに`GOOGLE_TOKEN_YAML_BASE64`を設定すれば、以降はブラウザ認証なしで実行できます。
 
 > [!TIP]
 > Discord ライブラリからの websocket 関連のログメッセージを非表示にしたい場合は、grep でフィルタリングできます：

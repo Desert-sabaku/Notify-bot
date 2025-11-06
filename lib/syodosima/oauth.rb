@@ -96,7 +96,7 @@ module Syodosima
 
   # Display instructions for saving token to .env file and optionally save it
   #
-  # @param [Object] token_store the token store containing the new token
+  # @param [Syodosima::MemoryTokenStore] token_store the token store containing the new token
   # @param [String] user_id the user ID
   # @return [void]
   def self.display_token_instructions(token_store, user_id)

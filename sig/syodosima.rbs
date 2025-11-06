@@ -89,4 +89,20 @@ module Syodosima
     def self.text_log_format: (String timestamp, String app_name, String level, String message) -> String
     def self.webrick_error: (String error_message) -> String
   end
+
+  # MemoryTokenStore class
+  class MemoryTokenStore
+    @tokens: Hash[String, String]
+
+    def initialize: (?Hash[untyped, untyped] _options) -> void
+    def load: (String id) -> String?
+    def store: (String id, String token) -> void
+    def delete: (String id) -> void
+
+    private
+
+    def load_from_env: -> void
+    def load_base64_token: -> void
+    def load_plain_token: -> void
+  end
 end

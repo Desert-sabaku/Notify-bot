@@ -30,8 +30,6 @@ class TestSyodosima < Minitest::Test
     @channel_id = ENV["DISCORD_CHANNEL_ID"]
     reset_constant(Syodosima, :DISCORD_BOT_TOKEN, @bot_token)
     reset_constant(Syodosima, :DISCORD_CHANNEL_ID, @channel_id)
-    # Initialize created_files for tests
-    Syodosima.instance_variable_set(:@created_files, [])
   end
 
   def teardown
@@ -50,16 +48,12 @@ class TestSyodosima < Minitest::Test
     mock_token_store = Object.new
     mock_credentials = Object.new
 
-    captured_path = nil
     captured_authorizer_args = nil
     captured = {}
 
     mock_authorizer = mock_authorizer_with_credentials(captured, mock_credentials)
 
-    Google::Auth::ClientId.stub :from_file, lambda { |path|
-      captured_path = path
-      mock_client_id
-    } do
+    Syodosima.stub :load_client_id_from_env, mock_client_id do
       Syodosima::MemoryTokenStore.stub :new, lambda { |*_args|
         mock_token_store
       } do
@@ -72,7 +66,6 @@ class TestSyodosima < Minitest::Test
       end
     end
 
-    assert_equal Syodosima::CREDENTIALS_PATH, captured_path
     assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   end
@@ -85,16 +78,12 @@ class TestSyodosima < Minitest::Test
     mock_client_id = Object.new
     mock_token_store = Object.new
 
-    captured_path = nil
     captured_authorizer_args = nil
     captured = {}
 
     mock_authorizer = mock_authorizer_with_credentials(captured, nil)
 
-    Google::Auth::ClientId.stub :from_file, lambda { |path|
-      captured_path = path
-      mock_client_id
-    } do
+    Syodosima.stub :load_client_id_from_env, mock_client_id do
       Syodosima::MemoryTokenStore.stub :new, lambda { |*_args|
         mock_token_store
       } do
@@ -109,7 +98,6 @@ class TestSyodosima < Minitest::Test
       end
     end
 
-    assert_equal Syodosima::CREDENTIALS_PATH, captured_path
     assert_equal [mock_client_id, Syodosima::SCOPE, mock_token_store], captured_authorizer_args
     assert_equal "default", captured[:user_id]
   ensure

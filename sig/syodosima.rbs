@@ -2,18 +2,13 @@ module Syodosima
   VERSION: String
 
   APPLICATION_NAME: String
-  CREDENTIALS_PATH: String
   TOKEN_PATH: String
   SCOPE: Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
   DISCORD_BOT_TOKEN: String?
   DISCORD_CHANNEL_ID: String?
   REQUIRED_ENV_VARS: Hash[String, String]
-  @created_files: Array[String]?
 
-  def self.created_files: -> Array[String]
   def self.validate_env!: -> void
-  def self.write_credential_files!: -> void
-  def self.write_env_file: (String env_key, String path) -> void
   def self.fetch_today_events: -> Array[Google::Apis::CalendarV3::Event]
   def self.today_time_window: -> [String, String]
   def self.run: -> void
@@ -25,6 +20,7 @@ module Syodosima
   def self.display_token_instructions: (Syodosima::MemoryTokenStore token_store, String user_id) -> void
   def self.auto_save_to_env?: (String base64_token) -> bool
   def self.find_env_file: -> String?
+  def self.load_client_id_from_env: -> Google::Auth::ClientId
   def self.oauth_port: -> Integer
   def self.redirect_uri_for_port: (Integer port) -> String
   def self.client_id_and_token_store: -> [Google::Auth::ClientId, Syodosima::MemoryTokenStore]

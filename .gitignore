@@ -1,6 +1,5 @@
 # Secret files
 .env
-credentials.json
 
 # Bundler
 /vendor/

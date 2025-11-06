@@ -207,9 +207,24 @@ module Syodosima
   #
   # @return [Array<Google::Auth::ClientId, Syodosima::MemoryTokenStore>] [client_id, token_store]
   def self.client_id_and_token_store
-    client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
+    client_id = load_client_id_from_env
     token_store = MemoryTokenStore.new
     [client_id, token_store]
+  end
+
+  # Load Google OAuth client ID from environment variable
+  #
+  # @return [Google::Auth::ClientId] the client ID
+  # @raise [RuntimeError] if GOOGLE_CREDENTIALS_JSON is missing or invalid
+  def self.load_client_id_from_env
+    credentials_json = ENV["GOOGLE_CREDENTIALS_JSON"]
+    raise "GOOGLE_CREDENTIALS_JSON environment variable is not set" if credentials_json.nil? || credentials_json.empty?
+
+    require "json"
+    credentials_hash = JSON.parse(credentials_json)
+    Google::Auth::ClientId.from_hash(credentials_hash)
+  rescue JSON::ParserError => e
+    raise "Invalid JSON in GOOGLE_CREDENTIALS_JSON: #{e.message}"
   end
 
   # Helper: start oauth HTTP server and return [server, code_container, thread]

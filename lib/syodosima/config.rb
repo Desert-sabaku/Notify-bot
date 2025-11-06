@@ -5,7 +5,6 @@
 module Syodosima
   APPLICATION_NAME = "Discord Calendar Notifier".freeze
 
-  CREDENTIALS_PATH = ENV.fetch("CREDENTIALS_PATH", "credentials.json")
   TOKEN_PATH = ENV.fetch("TOKEN_PATH", "token.yaml")
 
   # Google Calendar scope required for reading events
@@ -16,17 +15,10 @@ module Syodosima
   DISCORD_CHANNEL_ID = ENV["DISCORD_CHANNEL_ID"]
 
   # List of env vars required for operation and a short description
-  # GOOGLE_TOKEN_YAML is optional; if missing, the app will initiate OAuth flow.
+  # GOOGLE_TOKEN_YAML_BASE64 is optional; if missing, the app will initiate OAuth flow.
   REQUIRED_ENV_VARS = {
     "DISCORD_BOT_TOKEN" => "Discord bot token used to post messages",
     "DISCORD_CHANNEL_ID" => "Discord channel ID to send notifications to",
     "GOOGLE_CREDENTIALS_JSON" => "Base64 or raw JSON for Google OAuth client credentials"
   }.freeze
-
-  # Track files created at runtime so CI cleanup can remove them.
-  #
-  # @return [Array<String>] list of created file paths
-  def self.created_files
-    @created_files ||= []
-  end
 end

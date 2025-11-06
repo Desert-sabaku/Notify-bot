@@ -49,7 +49,7 @@ Syodosima は Google Calendar から今日の予定を自動的に取得し、Di
 1. [Google Cloud Console](https://console.cloud.google.com/) で新しいプロジェクトを作成
 2. Google Calendar API を有効化
 3. 認証情報を作成（OAuth 2.0 クライアント ID）
-4. `credentials.json` ファイルをダウンロード
+4. OAuth クライアント認証情報の JSON をダウンロード
 
 #### Discord Bot の設定
 
@@ -68,7 +68,7 @@ Syodosima は Google Calendar から今日の予定を自動的に取得し、Di
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
 DISCORD_CHANNEL_ID=your_channel_id_here
-# credentials.json の中身をそのまま貼り付けてください
+# Google Cloud Console からダウンロードした OAuth クライアント認証情報の JSON を貼り付けてください
 GOOGLE_CREDENTIALS_JSON={"installed":{"client_id":"...","client_secret":"...","redirect_uris":["http://localhost"]}}
 ```
 
@@ -82,7 +82,7 @@ GitHub リポジトリの Settings > Secrets and variables > Actions で以下�
 
 -   `DISCORD_BOT_TOKEN`: Discord Bot のトークン
 -   `DISCORD_CHANNEL_ID`: 通知を送信する Discord チャンネル ID
--   `GOOGLE_CREDENTIALS_JSON`: credentials.json ファイルの内容
+-   `GOOGLE_CREDENTIALS_JSON`: Google Cloud Console からの OAuth クライアント認証情報 JSON
 -   `GOOGLE_TOKEN_YAML_BASE64`: 初回認証後に表示される Base64 エンコードされたトークン
 
 ### アプリケーションの実行

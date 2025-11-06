@@ -10,8 +10,10 @@ module Syodosima
 
   def self.validate_env!: -> void
   def self.fetch_today_events: -> Array[Google::Apis::CalendarV3::Event]
+  def self.fetch_events: (Date date) -> Array[Google::Apis::CalendarV3::Event]
   def self.today_time_window: -> [String, String]
-  def self.run: -> void
+  def self.time_window: (Date date) -> [String, String]
+  def self.run: (?Date? date) -> void
 
   # OAuth helpers
   def self.authorize: -> Google::Auth::UserRefreshCredentials
@@ -40,7 +42,7 @@ module Syodosima
   def self.logger=: (Logger val) -> Logger
 
   # Message helpers
-  def self.build_message: (Array[Google::Apis::CalendarV3::Event] events) -> String
+  def self.build_message: (Array[Google::Apis::CalendarV3::Event] events, ?Date? date) -> String
   def self.format_event: (Google::Apis::CalendarV3::Event event) -> String
 
   # Message constants
@@ -88,6 +90,9 @@ module Syodosima
     def self.json_log_format: (String timestamp, String app_name, String level, String message) -> String
     def self.text_log_format: (String timestamp, String app_name, String level, String message) -> String
     def self.webrick_error: (String error_message) -> String
+    def self.log_fetching_events: (Date date) -> String
+    def self.message_no_events: (Date date) -> String
+    def self.message_with_events_prefix: (Date date) -> String
   end
 
   # MemoryTokenStore class

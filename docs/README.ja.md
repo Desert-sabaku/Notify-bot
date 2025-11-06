@@ -117,8 +117,13 @@ GOOGLE_TOKEN_YAML_BASE64=LS0tCmRlZmF1bHQ6IC4uLg==
 bundle exec rake run:once
 ```
 
-> [!IMPORTANT]
-> `.env`ファイルに`GOOGLE_TOKEN_YAML_BASE64`を設定すれば、以降はブラウザ認証なしで実行できます。
+**特定の日付の予定を取得する場合：**
+
+```bash
+DATE=2025-12-25 bundle exec rake run:date
+```
+
+> [!IMPORTANT] > `.env`ファイルに`GOOGLE_TOKEN_YAML_BASE64`を設定すれば、以降はブラウザ認証なしで実行できます。
 
 > [!TIP]
 > Discord ライブラリからの websocket 関連のログメッセージを非表示にしたい場合は、grep でフィルタリングできます：
@@ -137,7 +142,8 @@ gem としてインストールした場合：
 irb
 irb(main):001> require "syodosima"
 => true
-irb(main):002> Syodosima.run
+irb(main):002> Syodosima.run                              # 今日の予定
+irb(main):003> Syodosima.run(Date.new(2025, 12, 25))      # 特定の日付
 ```
 
 #### GitHub Actions での自動実行
@@ -176,7 +182,6 @@ jobs:
 Bot が送信するメッセージの例：
 
 ```text
-おはようございます！
 今日の予定をお知らせします。
 
 【09:00〜10:00】 チームミーティング

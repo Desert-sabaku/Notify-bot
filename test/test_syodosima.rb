@@ -146,7 +146,7 @@ class TestSyodosima < Minitest::Test
     result = run_main_and_capture_message([])
 
     assert_equal @channel_id, result[:channel]
-    assert_equal "おはようございます！\n今日の予定はありません。", result[:message]
+    assert_equal "今日の予定はありません。", result[:message]
     assert result[:bot].stopped?, "Bot should stop after notifying"
     assert result[:bot].joined?, "Bot should join after notifying"
   end
@@ -158,7 +158,7 @@ class TestSyodosima < Minitest::Test
 
     result = run_main_and_capture_message(events)
     message = result[:message]
-    expected = "おはようございます！\n今日の予定をお知らせします。\n\n【09:00〜10:00】 会議\n"
+    expected = "今日の予定をお知らせします。\n\n【09:00〜10:00】 会議\n"
     assert_equal expected, message
     assert_equal @channel_id, result[:channel]
   end
@@ -168,7 +168,7 @@ class TestSyodosima < Minitest::Test
 
     result = run_main_and_capture_message(events)
     message = result[:message]
-    expected = "おはようございます！\n今日の予定をお知らせします。\n\n【終日】 休日\n"
+    expected = "今日の予定をお知らせします。\n\n【終日】 休日\n"
     assert_equal expected, message
     assert_equal @channel_id, result[:channel]
   end
@@ -188,7 +188,7 @@ class TestSyodosima < Minitest::Test
   def run_module_and_capture_message(events)
     bot_spy = BotSpy.new
 
-    Syodosima.stub :fetch_today_events, events do
+    Syodosima.stub :fetch_events, events do
       Discordrb::Bot.stub :new, bot_spy do
         capture_io { Syodosima.run }
       end
@@ -205,7 +205,7 @@ class TestSyodosima < Minitest::Test
   def run_main_and_capture_message(events)
     bot_spy = BotSpy.new
 
-    Syodosima.stub :fetch_today_events, events do
+    Syodosima.stub :fetch_events, events do
       Discordrb::Bot.stub :new, bot_spy do
         capture_io { Syodosima.run }
       end

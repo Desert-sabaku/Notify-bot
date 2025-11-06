@@ -120,6 +120,13 @@ bundle exec rake run:once
 > [!IMPORTANT]
 > Once you set `GOOGLE_TOKEN_YAML_BASE64` in `.env`, you can run without browser authentication.
 
+> [!TIP]
+> If you want to suppress websocket-related log messages from the Discord library, you can filter them using grep:
+>
+> ```bash
+> bundle exec rake run:once 2>&1 | grep -v '\[.*websocket\|et-[0-9]\+'
+> ```
+
 **Running with irb**
 
 If installed as a gem:

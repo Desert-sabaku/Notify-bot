@@ -14,21 +14,21 @@ jobs:
 
         steps:
             - name: Checkout repository
-                uses: actions/checkout@v4
+              uses: actions/checkout@v4
 
             - name: Set up Ruby
-                uses: ruby/setup-ruby@v1
-                with:
-                    ruby-version: "3.4"
-                    bundler-cache: true
+              uses: ruby/setup-ruby@v1
+              with:
+                  ruby-version: "3.4"
+                  bundler-cache: true
 
             - name: Compute DATE for tomorrow (JST)
-                run: echo "DATE=$(TZ=Asia/Tokyo date -d tomorrow +%F)" >> "$GITHUB_ENV"
+              run: echo "DATE=$(TZ=Asia/Tokyo date -d tomorrow +%F)" >> "$GITHUB_ENV"
 
             - name: Run notifier script (tomorrow's events)
-                env:
-                    DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-                    DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-                    GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-                    GOOGLE_TOKEN_YAML_BASE64: ${{ secrets.GOOGLE_TOKEN_YAML_BASE64 }}
-                run: DATE="$DATE" bundle exec rake run:date
+              env:
+                  DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+                  DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+                  GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+                  GOOGLE_TOKEN_YAML_BASE64: ${{ secrets.GOOGLE_TOKEN_YAML_BASE64 }}
+              run: DATE="$DATE" bundle exec rake run:date

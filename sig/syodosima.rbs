@@ -63,6 +63,8 @@ module Syodosima
     MESSAGE_WITH_EVENTS_PREFIX: String
     EVENT_TIME_FORMAT_TEMPLATE: String
     EVENT_ALL_DAY_FORMAT_TEMPLATE: String
+  EVENT_TIME_WITH_DESC_TEMPLATE: String
+  EVENT_ALL_DAY_WITH_DESC_TEMPLATE: String
     JSON_LOG_FORMAT_TEMPLATE: String
     TEXT_LOG_FORMAT_TEMPLATE: String
     WEBRICK_ERROR_FORMAT: String
@@ -87,6 +89,8 @@ module Syodosima
     def self.discord_failed_send_message: (String error_message) -> String
     def self.event_time_format: (String formatted_time, String summary) -> String
     def self.event_all_day_format: (String summary) -> String
+  def self.event_time_with_desc: (String formatted_time, String summary, String description) -> String
+  def self.event_all_day_with_desc: (String summary, String description) -> String
     def self.json_log_format: (String timestamp, String app_name, String level, String message) -> String
     def self.text_log_format: (String timestamp, String app_name, String level, String message) -> String
     def self.webrick_error: (String error_message) -> String

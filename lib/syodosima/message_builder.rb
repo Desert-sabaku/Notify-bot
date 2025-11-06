@@ -23,11 +23,19 @@ module Syodosima
   # @param [Google::Apis::CalendarV3::Event] event the event to format
   # @return [String] the formatted event string
   def self.format_event(event)
+    description = event.description&.to_s&.strip
+
     if event.start.date_time
       start_time = event.start.date_time
       end_time = event.end.date_time
       formatted_time = "#{start_time.strftime('%H:%M')}〜#{end_time.strftime('%H:%M')}"
-      MessageConstants.event_time_format(formatted_time, event.summary)
+      if description && !description.empty?
+        MessageConstants.event_time_with_desc(formatted_time, event.summary, description)
+      else
+        MessageConstants.event_time_format(formatted_time, event.summary)
+      end
+    elsif description && !description.empty?
+      MessageConstants.event_all_day_with_desc(event.summary, description)
     else
       MessageConstants.event_all_day_format(event.summary)
     end

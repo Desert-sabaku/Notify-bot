@@ -117,6 +117,12 @@ If you enter `N` or want to save manually, add the displayed `GOOGLE_TOKEN_YAML_
 bundle exec rake run:once
 ```
 
+**To fetch events for a specific date:**
+
+```bash
+DATE=2025-12-25 bundle exec rake run:date
+```
+
 > [!IMPORTANT]
 > Once you set `GOOGLE_TOKEN_YAML_BASE64` in `.env`, you can run without browser authentication.
 
@@ -127,7 +133,7 @@ bundle exec rake run:once
 > bundle exec rake run:once 2>&1 | grep -v '\[.*websocket\|et-[0-9]\+'
 > ```
 
-### Running with irb
+**Running with irb**
 
 If installed as a gem:
 
@@ -135,7 +141,8 @@ If installed as a gem:
 irb
 irb(main):001> require "syodosima"
 => true
-irb(main):002> Syodosima.run
+irb(main):002> Syodosima.run                    # Today's events
+irb(main):003> Syodosima.run(Date.new(2025, 12, 25))  # Specific date
 ```
 
 #### Automatic Execution in GitHub Actions

@@ -7,11 +7,13 @@ module Syodosima
   # Build the daily notification message from events
   #
   # @param [Array<Google::Apis::CalendarV3::Event>] events list of events
+  # @param [Date, nil] date the date for the events (defaults to today)
   # @return [String] the formatted message
-  def self.build_message(events)
-    return MessageConstants::MESSAGE_NO_EVENTS if events.empty?
+  def self.build_message(events, date = nil)
+    target_date = date || Date.today
+    return MessageConstants.message_no_events(target_date) if events.empty?
 
-    message = MessageConstants::MESSAGE_WITH_EVENTS_PREFIX
+    message = MessageConstants.message_with_events_prefix(target_date)
     events.each { |e| message += format_event(e) }
     message
   end

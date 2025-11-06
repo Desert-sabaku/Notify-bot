@@ -26,9 +26,9 @@ module Syodosima
     DISCORD_DELIVERY_FAILED = "Message delivery failed".freeze
     DISCORD_MESSAGE_SENT = "Message sent and bot stopped.".freeze
 
-    # Message builder messages
-    MESSAGE_NO_EVENTS = "おはようございます！\n今日の予定はありません。".freeze
-    MESSAGE_WITH_EVENTS_PREFIX = "おはようございます！\n今日の予定をお知らせします。\n\n".freeze
+    # Message builder messages (deprecated - use dynamic methods instead)
+    MESSAGE_NO_EVENTS = "今日の予定はありません。".freeze
+    MESSAGE_WITH_EVENTS_PREFIX = "今日の予定をお知らせします。\n\n".freeze
     EVENT_TIME_FORMAT_TEMPLATE = "【%s】 %s\n".freeze
     EVENT_ALL_DAY_FORMAT_TEMPLATE = "【終日】 %s\n".freeze
 
@@ -128,6 +128,36 @@ module Syodosima
     # @return [String] formatted WEBrick error message
     def self.webrick_error(error_message)
       format(WEBRICK_ERROR_FORMAT, error_message)
+    end
+
+    # @param [Date] date the target date
+    # @return [String] formatted log message for fetching events
+    def self.log_fetching_events(date)
+      if date == Date.today
+        LOG_FETCHING_EVENTS
+      else
+        "#{date.strftime('%Y年%m月%d日')}の予定を取得しています..."
+      end
+    end
+
+    # @param [Date] date the target date
+    # @return [String] formatted message for no events
+    def self.message_no_events(date)
+      if date == Date.today
+        MESSAGE_NO_EVENTS
+      else
+        "#{date.strftime('%Y年%m月%d日')}の予定はありません。"
+      end
+    end
+
+    # @param [Date] date the target date
+    # @return [String] formatted message prefix for events
+    def self.message_with_events_prefix(date)
+      if date == Date.today
+        MESSAGE_WITH_EVENTS_PREFIX
+      else
+        "#{date.strftime('%Y年%m月%d日')}の予定をお知らせします。\n\n"
+      end
     end
   end
 end

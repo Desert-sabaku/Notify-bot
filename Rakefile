@@ -18,6 +18,22 @@ namespace :run do
     Syodosima.run
   end
 
+  desc "Run the Syodosima notifier for a specific date (DATE=YYYY-MM-DD)"
+  task :date do
+    require "dotenv/load"
+    require_relative "lib/syodosima"
+
+    date_str = ENV["DATE"]
+    abort "Please specify DATE environment variable (e.g., DATE=2025-11-10)" unless date_str
+
+    begin
+      target_date = Date.parse(date_str)
+      Syodosima.run(target_date)
+    rescue Date::Error => e
+      abort "Invalid date format: #{date_str}. Please use YYYY-MM-DD format. Error: #{e.message}"
+    end
+  end
+
   desc "Print environment variables used by the notifier"
   task :env do
     require "dotenv/load"

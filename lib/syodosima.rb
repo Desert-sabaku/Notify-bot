@@ -44,11 +44,19 @@ module Syodosima
   #
   # @return [Array<Google::Apis::CalendarV3::Event>] list of today's events
   def self.fetch_today_events
+    fetch_events(Date.today)
+  end
+
+  # Fetch events from Google Calendar for a specific date
+  #
+  # @param [Date] date the date to fetch events for
+  # @return [Array<Google::Apis::CalendarV3::Event>] list of events for the specified date
+  def self.fetch_events(date)
     service = Google::Apis::CalendarV3::CalendarService.new
     service.client_options.application_name = APPLICATION_NAME
     service.authorization = authorize
 
-    time_min, time_max = today_time_window
+    time_min, time_max = time_window(date)
 
     events = service.list_events(
       "primary",
@@ -64,24 +72,32 @@ module Syodosima
   #
   # @return [Array<String>] [time_min, time_max] in RFC3339 format
   def self.today_time_window
+    time_window(Date.today)
+  end
+
+  # Compute RFC3339 time_min/time_max for a specific date according to TIMEZONE_OFFSET
+  #
+  # @param [Date] date the date to compute the time window for
+  # @return [Array<String>] [time_min, time_max] in RFC3339 format
+  def self.time_window(date)
     timezone_offset = ENV.fetch("TIMEZONE_OFFSET", "+09:00")
-    now_tz = DateTime.now.new_offset(timezone_offset)
-    today = now_tz.to_date
-    time_min = DateTime.new(today.year, today.month, today.day, 0, 0, 0, timezone_offset).rfc3339
-    time_max = DateTime.new(today.year, today.month, today.day, 23, 59, 59, timezone_offset).rfc3339
+    time_min = DateTime.new(date.year, date.month, date.day, 0, 0, 0, timezone_offset).rfc3339
+    time_max = DateTime.new(date.year, date.month, date.day, 23, 59, 59, timezone_offset).rfc3339
     [time_min, time_max]
   end
 
   # Main entry point to run the notification process
   #
+  # @param [Date, nil] date the date to fetch events for (defaults to today)
   # @return [void]
-  def self.run
+  def self.run(date = nil)
     validate_env!
 
-    logger.info(MessageConstants::LOG_FETCHING_EVENTS)
-    events = fetch_today_events
+    target_date = date || Date.today
+    logger.info(MessageConstants.log_fetching_events(target_date))
+    events = fetch_events(target_date)
 
-    message = build_message(events)
+    message = build_message(events, target_date)
 
     logger.info(MessageConstants::LOG_SENDING_DISCORD)
     send_discord_message(message)

@@ -31,6 +31,8 @@ module Syodosima
     MESSAGE_WITH_EVENTS_PREFIX = "今日の予定をお知らせします。\n\n".freeze
     EVENT_TIME_FORMAT_TEMPLATE = "【%s】 %s\n".freeze
     EVENT_ALL_DAY_FORMAT_TEMPLATE = "【終日】 %s\n".freeze
+    EVENT_TIME_WITH_DESC_TEMPLATE = "【%s】 %s - %s\n".freeze
+    EVENT_ALL_DAY_WITH_DESC_TEMPLATE = "【終日】 %s - %s\n".freeze
 
     # Logger formats
     JSON_LOG_FORMAT_TEMPLATE = '{"timestamp":"%s","app":"%s","level":"%s","message":"%s"}'.freeze
@@ -104,6 +106,21 @@ module Syodosima
     # @return [String] formatted all-day event message
     def self.event_all_day_format(summary)
       format(EVENT_ALL_DAY_FORMAT_TEMPLATE, summary)
+    end
+
+    # @param [String] formatted_time the formatted time string
+    # @param [String] summary the event summary
+    # @param [String] description the event description
+    # @return [String] formatted event time message with description
+    def self.event_time_with_desc(formatted_time, summary, description)
+      format(EVENT_TIME_WITH_DESC_TEMPLATE, formatted_time, summary, description)
+    end
+
+    # @param [String] summary the event summary
+    # @param [String] description the event description
+    # @return [String] formatted all-day event message with description
+    def self.event_all_day_with_desc(summary, description)
+      format(EVENT_ALL_DAY_WITH_DESC_TEMPLATE, summary, description)
     end
 
     # @param [String] timestamp the timestamp

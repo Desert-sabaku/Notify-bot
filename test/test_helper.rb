@@ -52,7 +52,7 @@ end
 
 module TestHelper
   EventTime = Struct.new(:date_time, :date)
-  Event = Struct.new(:start, :end, :summary)
+  Event = Struct.new(:start, :end, :summary, :description)
 
   ENV_KEYS = %w[DISCORD_BOT_TOKEN DISCORD_CHANNEL_ID GOOGLE_CREDENTIALS_JSON GOOGLE_TOKEN_YAML_BASE64].freeze
 
@@ -165,10 +165,10 @@ module TestHelper
   end
 
   # Create mock Google Calendar event
-  def create_mock_event(summary, start_date_time = nil, end_date_time = nil)
+  def create_mock_event(summary, start_date_time = nil, end_date_time = nil, description: nil)
     start_time = start_date_time ? EventTime.new(start_date_time, nil) : EventTime.new(nil, Date.today.to_s)
     end_time = EventTime.new(end_date_time, nil)
-    Event.new(start_time, end_time, summary)
+    Event.new(start_time, end_time, summary, description)
   end
 
   # Helper to reset a constant to a new value

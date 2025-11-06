@@ -26,29 +26,6 @@ module Syodosima
     interactive_auth_flow(authorizer, token_store, user_id)
   end
 
-  # Handle corrupted token file by backing up and deleting
-  # NOTE: This is kept for backward compatibility but no longer used
-  #
-  # @return [void]
-  def self.handle_corrupted_token
-    return unless File.exist?(TOKEN_PATH)
-
-    begin
-      ts = Time.now.utc.strftime("%Y%m%d%H%M%S")
-      backup = "#{TOKEN_PATH}.#{ts}.bak"
-      begin
-        File.rename(TOKEN_PATH, backup)
-        logger.warn("#{MessageConstants::BACKUP_CREATED} #{backup}")
-      rescue StandardError
-        FileUtils.cp(TOKEN_PATH, backup)
-        logger.warn("#{MessageConstants::BACKUP_COPIED} #{backup}")
-        File.delete(TOKEN_PATH)
-      end
-    rescue StandardError => e
-      logger.warn(MessageConstants.backup_failed_log(TOKEN_PATH, e.message))
-    end
-  end
-
   # Extracted interactive auth flow to reduce method complexity
   #
   # @param [Google::Auth::UserAuthorizer] authorizer the OAuth authorizer

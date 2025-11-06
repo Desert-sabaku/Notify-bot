@@ -56,8 +56,8 @@ module Syodosima
     TOKEN_MANUAL_ADD = "手動で.envファイルに上記の行を追加してください。".freeze
     TOKEN_SAVE_PROMPT = ".envファイルに自動で保存しますか？ (y/N): ".freeze
     TOKEN_SAVE_SUCCESS = "✓ .envファイルに保存しました！".freeze
-    TOKEN_SAVE_FAILED_FORMAT = "Failed to save to .env: %s".freeze
-    TOKEN_INSTRUCTIONS_FAILED_FORMAT = "Could not display token save instructions: %s".freeze
+    TOKEN_SAVE_FAILED_FORMAT = ".envファイルへの保存に失敗しました: %s".freeze
+    TOKEN_INSTRUCTIONS_FAILED_FORMAT = "トークン保存手順の表示に失敗しました: %s".freeze
     TOKEN_SAVE_INSTRUCTIONS = "認証が完了しました。以下のトークンを.envファイルに保存してください：".freeze
 
     # Helper methods for formatted messages
